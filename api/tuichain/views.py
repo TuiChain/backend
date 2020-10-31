@@ -1,22 +1,23 @@
-from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from rest_framework import permissions
-from .serializers import UserSerializer, GroupSerializer
+from .models import Student, Investor, LoanRequest, Investment
+from .serializers import StudentSerializer, InvestorSerializer, LoanRequestSerializer, InvestmentSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class StudentViewSet(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
 
 
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class InvestorViewSet(viewsets.ModelViewSet):
+    queryset = Investor.objects.all()
+    serializer_class = InvestorSerializer
+
+
+class LoanRequestViewSet(viewsets.ModelViewSet):
+    queryset = LoanRequest.objects.all()
+    serializer_class = LoanRequestSerializer
+
+
+class InvestmentViewSet(viewsets.ModelViewSet):
+    queryset = Investment.objects.all()
+    serializer_class = InvestmentSerializer
