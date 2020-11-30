@@ -15,18 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
-from tuichain.api import views
-
-router = routers.DefaultRouter()
-router.register(r'students', views.StudentViewSet)
-router.register(r'investors', views.InvestorViewSet)
-router.register(r'loanrequests', views.LoanRequestViewSet)
-router.register(r'investments', views.InvestmentViewSet)
+from tuichain.api.views import StudentView, InvestorView, LoanRequestView, InvestmentView
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('', include('rest_framework.urls', namespace='rest_framework')),
+    path('admin/', admin.site.urls),
+    path('students/', StudentView.as_view()),
+    path('investors/', InvestorView.as_view()),
+    path('loanrequests/', LoanRequestView.as_view()),
+    path('investments/', InvestmentView.as_view())   
 ]
