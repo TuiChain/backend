@@ -25,6 +25,7 @@ class LoanRequest(models.Model):
     current_amount = models.DecimalField(editable=False, max_digits=8, decimal_places=2, default='0.00')
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     validated = models.BooleanField(editable=False,default=False)
+    active = models.BooleanField(default=False)
 
     def __str__(self): 
          return self.course + " na " + self.school + " do " + self.student.full_name
