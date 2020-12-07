@@ -1,17 +1,36 @@
-from rest_framework import viewsets, mixins
-from rest_framework import permissions
-from rest_framework.decorators import action
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from tuichain.api.serializers import InvestmentSerializer, LoanRequestSerializer
-from tuichain.api.models import Investment, LoanRequest
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+)
+from tuichain.api.models import LoanRequest
+from rest_framework.permissions import *
+from rest_framework.decorators import api_view, permission_classes
 import decimal
 
-class LoanRequestViewSet(viewsets.ModelViewSet):
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def create_loan_request(request):
     """
-    API endpoint that allows loan requests to be viewed or edited.
+    Create new LoanRequest
     """
-    queryset = LoanRequest.objects.all()
-    serializer_class = LoanRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    user = request.user
+
+    school = request.data.get('school')
+    course = request.data.get('course')
+    amount = request.data.get('amount')
+
+    if school is None or course is None or amount is None:
+        return Response({'error': 'Required fields: school, course and amount'},status=HTTP_400_BAD_REQUEST)
+
+    # TODO: verify if User has complete profile and validated identity
+    # TODO: add validations to prevent users from creating/having more than one active LoanRequest at a time
+    # ...
+
+    loanrequest = LoanRequest.objects.create(student=user, school=school, course=course, amount=amount)
+    loanrequest.save()
+
+    return Response({'message': 'Loan Request successfully created'},status=HTTP_201_CREATED)
