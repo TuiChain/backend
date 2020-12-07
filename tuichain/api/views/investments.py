@@ -1,50 +1,58 @@
-from rest_framework import viewsets, mixins
-from rest_framework import permissions
-from rest_framework.decorators import action
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from tuichain.api.serializers import InvestmentSerializer, LoanRequestSerializer
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+)
 from tuichain.api.models import Investment, LoanRequest
+from rest_framework.permissions import *
+from rest_framework.decorators import api_view, permission_classes
 import decimal
 
-class InvestmentViewSet(viewsets.ReadOnlyModelViewSet):
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def create_investment(request):
     """
-    API endpoint that allows investments to be viewed or edited.
+    Create new Investment
     """
-    queryset = Investment.objects.all()
-    serializer_class = InvestmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    user = request.user
 
-    @action(detail =False, methods=['post'], name='Create Investment')
-    def invest(self, request, **kwargs):
-            # request.data is from the POST object. We want to take these
-            # values and supplement it with the user.id that's defined
-            # in our URL parameter
-            data = {
-                'investor': request.data['investor'],
-                'request': request.data['request'],
-                'amount': request.data['amount']
-            }
+    loanrequest_id = request.data.get('request')
+    amount = request.data.get('amount')
 
-            loanrequest = LoanRequest.objects.filter(id=data['request']).first()
+    if loanrequest_id is None or amount is None:
+        return Response({'error': 'Required fields: request and amount'},status=HTTP_400_BAD_REQUEST)
 
-            d = decimal.Decimal(data['amount'])
 
-            if d + loanrequest.current_amount <= loanrequest.amount :
+    loanrequest = LoanRequest.objects.filter(id=loanrequest_id).first()
 
-                serializer = InvestmentSerializer(data=data)
+    if loanrequest is None:
+        return Response({'error': 'Unexistent Loan Request'},status=HTTP_404_NOT_FOUND)
 
-                if serializer.is_valid():
+    if loanrequest.student == user.id:
+        return Response({'error': 'Cannot invest in your own Loan Request'},status=HTTP_403_FORBIDDEN)
 
-                    novovalor = loanrequest.current_amount + d
-                    setattr(loanrequest, 'current_amount', novovalor)
-                    loanrequest.save()
+    if not loanrequest.validated:
+        return Response({'error': 'The given Loan Request is not validated yet'},status=HTTP_403_FORBIDDEN)
 
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if not loanrequest.active:
+        return Response({'error': 'The given Loan Request is not active anymore'},status=HTTP_403_FORBIDDEN)
+
+    if loanrequest.student == user:
+        return Response({'error': 'A user cannot invest in its own Loan Requests'},status=HTTP_403_FORBIDDEN)
+
+    decimal_amount = decimal.Decimal(amount)
+
+    new_amount = decimal_amount + loanrequest.current_amount
+
+    if new_amount <= loanrequest.amount :
+        investment = Investment.objects.create(amount=new_amount, investor=user, request=loanrequest)
+
+        investment.save()
+
+        return Response({'message': 'Investment created with success'}, status=HTTP_201_CREATED)
             
-            else: return Response({"Quantidade inválida"}, status=status.HTTP_400_BAD_REQUEST)
+    else: 
+        return Response({'error': 'An Investment with that amount is not possible at the moment'}, status=HTTP_400_BAD_REQUEST)
