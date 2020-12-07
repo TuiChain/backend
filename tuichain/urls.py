@@ -10,6 +10,6 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/auth/login/', auth.login),
     path('api/auth/signup/', auth.signup),
-    path('api/investments/new', investments.create_investment),
-    path('api/loanrequests/new', loanrequests.create_loan_request)
+    path('api/investments/new/', investments.create_investment),
+    path('api/loanrequests/new/', loanrequests.create_loan_request)
 ]
