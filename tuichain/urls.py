@@ -1,12 +1,14 @@
 from django.contrib import admin
 from django.conf.urls import url
 from django.urls import path, include
+from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework import routers
 from tuichain.api.views import auth, users, investments, loanrequests, external
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+import os
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -25,6 +27,7 @@ schema_view = get_schema_view(
 router = routers.DefaultRouter()
 
 urlpatterns = [
+    path('', RedirectView.as_view(url=os.environ['REDIRECT_URL'])),
     path('api/', include(router.urls)),
     # AUTHENTICATION ROUTES
     path('api/auth/login/', auth.login),
