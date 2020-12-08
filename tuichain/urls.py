@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework import routers
-from tuichain.api.views import auth, users, investments, loanrequests
+from tuichain.api.views import auth, users, investments, loanrequests, external
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -32,6 +32,8 @@ urlpatterns = [
     # USER ROUTES
     # path('api/users/get/<int:id>/', users.get_user),
     # path('api/users/get/', users.get_user),
+    # EXTERNAL ROUTES
+    path('api/external/create_verification_intent/', external.request_id_verification),
     # INVESTMENTS ROUTES
     path('api/investments/new/', investments.create_investment),
     path('api/investments/get_personal/', investments.get_personal_investments),
