@@ -33,6 +33,12 @@ class Profile(models.Model):
     def __str__(self): 
          return self.full_name
 
+class IDVerifications(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="id_verification")
+    verification_id = models.CharField(max_length=100, null=True, blank=True)
+    person_id = models.CharField(max_length=100, null=True, blank=True)
+    validated = models.BooleanField(default=False)
+
 class LoanRequest(models.Model):
     id = models.AutoField(primary_key=True)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -86,16 +92,18 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
 
-# Create and Save User Profile when a User is created
+# Create and Save User Profile and ID Verification when a User is created
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    print('SIGNAL: create user profile')
+def create_user_profile_idverification(sender, instance, created, **kwargs):
+    # print('SIGNAL: create user profile')
     if created:
         Profile.objects.create(user=instance)
+        IDVerifications.objects.create(user=instance)
 
 @receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    print('SIGNAL: save user profile')
+def save_user_profile_idverification(sender, instance, **kwargs):
+    # print('SIGNAL: save user profile')
     instance.profile.save()
+    instance.id_verification.save()
 
     
