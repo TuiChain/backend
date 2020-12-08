@@ -58,3 +58,47 @@ def create_investment(request):
             
     else: 
         return Response({'error': 'An Investment with that amount is not possible at the moment'}, status=HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_personal_investments(request):
+    """
+    Get Investments made by the authenticated user
+    """
+
+    user = request.user
+
+    investment_list = Investment.objects.filter(investor=user)
+
+    result = [obj.to_dict() for obj in investment_list]
+
+    return Response(
+        {
+            'message': 'Investments fetched with success', 
+            'investments': result, 
+            'count': len(result)
+        }, 
+        status=HTTP_200_OK
+    )
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_investment(request, id):
+    """
+    Get Investment with the given ID
+    """
+
+    investment = Investment.objects.filter(id=id).first()
+
+    # TODO: should we pass it only if it belongs to the authenticated user?
+
+    if investment is None:
+        return Response({'error': 'Investment with given ID not found'}, status=HTTP_404_NOT_FOUND)
+
+    return Response(
+        {
+            'message': 'Investment found with success', 
+            'investment': investment.to_dict()
+        }, 
+        status=HTTP_200_OK
+    )
