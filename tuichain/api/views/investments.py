@@ -48,9 +48,11 @@ def create_investment(request):
     new_amount = decimal_amount + loanrequest.current_amount
 
     if new_amount <= loanrequest.amount :
-        investment = Investment.objects.create(amount=new_amount, investor=user, request=loanrequest)
-
+        investment = Investment.objects.create(amount=decimal_amount, investor=user, request=loanrequest)
         investment.save()
+
+        loanrequest.current_amount = new_amount
+        loanrequest.save()
 
         return Response({'message': 'Investment created with success'}, status=HTTP_201_CREATED)
             
