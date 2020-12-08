@@ -27,7 +27,12 @@ def create_loan_request(request):
         return Response({'error': 'Required fields: school, course and amount'},status=HTTP_400_BAD_REQUEST)
 
     # TODO: verify if User has complete profile and validated identity
-    # TODO: add validations to prevent users from creating/having more than one active LoanRequest at a time
+    
+    loanrequests = LoanRequest.objects.filter(student=user,active=True)
+
+    if len(loanrequests) >= 1:
+        return Response({'error': 'An user cannot create Loan Requests when it has one currently undergoing'}, status=HTTP_400_BAD_REQUEST)
+    
     # ...
 
     loanrequest = LoanRequest.objects.create(student=user, school=school, course=course, amount=amount)
