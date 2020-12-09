@@ -33,8 +33,9 @@ urlpatterns = [
     path('api/auth/login/', auth.login),
     path('api/auth/signup/', auth.signup),
     # USER ROUTES
-    # path('api/users/get/<int:id>/', users.get_user),
-    # path('api/users/get/', users.get_user),
+    path('api/users/get/<int:id>/', users.get_user),
+    path('api/users/get/', users.get_me),
+    path('api/users/get_all/', users.get_all),
     # EXTERNAL ROUTES
     path('api/external/create_verification_intent/', external.request_id_verification),
     # INVESTMENTS ROUTES

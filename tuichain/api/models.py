@@ -17,16 +17,20 @@ class Profile(models.Model):
 
     def to_dict(self, private=False):
         result = {
-            'full_name': self.full_name,
+            'id': self.user.id,
+            'username': self.user.username,
+            'created_at': self.user.date_joined,
+            'is_active': self.user.is_active,
             'country': self.country
         }
 
         if private:
-            setattr(result, 'birth_date', self.birth_date)
-            setattr(result, 'address', self.address)
-            setattr(result, 'zip_code', self.zip_code)
-            setattr(result, 'city', self.city)
-            setattr(result, 'id_number', self.id_number)
+            result['full_name'] = self.full_name
+            result['birth_date'] = self.birth_date
+            result['address'] = self.address
+            result['zip_code'] = self.zip_code
+            result['city'] = self.city
+            result['id_number'] = self.id_number
 
         return result
 
