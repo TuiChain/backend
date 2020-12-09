@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     # Heroku Static Files
     'whitenoise.runserver_nostatic',
+    # CORS
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +70,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Heroku Static Files
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # CORS
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'tuichain.urls'
@@ -104,6 +108,9 @@ DATABASES = {
         'PORT': os.environ['DATABASE_PORT'],
     }
 }
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Password validation
