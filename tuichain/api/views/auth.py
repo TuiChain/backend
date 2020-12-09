@@ -24,11 +24,11 @@ def login(request):
     password = request.data.get("password")
 
     if username is None or password is None:
-        return Response({'error': 'Please enter username and password'},status=HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Required fields: username and password'},status=HTTP_400_BAD_REQUEST)
 
     user = authenticate(username=username, password=password)
     if not user:
-        return Response({'error': 'Please enter valid credentials!'},status=HTTP_404_NOT_FOUND)
+        return Response({'error': 'Invalid credentials or unexistent user'},status=HTTP_404_NOT_FOUND)
 
     token = Token.objects.get(user=user)
     return Response({'message': 'User logged in with success', 'token': token.key}, status=HTTP_200_OK)
@@ -63,3 +63,40 @@ def signup(request):
     token = Token.objects.get(user=user)
     return Response({'message': 'User created with success', 'token': token.key}, status=HTTP_201_CREATED)
 
+
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def verify_email(request):
+    """
+    Verify if email can be used for account creation (signup)
+    """
+    email = request.data.get("email")
+
+    if email is None:
+        return Response({'error': 'Required fields: email'},status=HTTP_400_BAD_REQUEST)
+
+    user = User.objects.filter(email=email).first()
+
+    if user is None:
+        return Response({'message': 'The given email is valid for signup'}, status=HTTP_200_OK)
+    
+    return Response({'error': 'Email already taken, please try another one'},status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def verify_username(request):
+    """
+    Verify if username can be used for account creation (signup)
+    """
+    username = request.data.get("username")
+
+    if username is None:
+        return Response({'error': 'Required fields: username'},status=HTTP_400_BAD_REQUEST)
+
+    user = User.objects.filter(username=username).first()
+
+    if user is None:
+        return Response({'message': 'The given username is valid for signup'}, status=HTTP_200_OK)
+    
+    return Response({'error': 'Username already taken, please try another one'},status=HTTP_400_BAD_REQUEST)

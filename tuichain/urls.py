@@ -32,6 +32,8 @@ urlpatterns = [
     # AUTHENTICATION ROUTES
     path('api/auth/login/', auth.login),
     path('api/auth/signup/', auth.signup),
+    path('api/auth/verify_email/', auth.verify_email),
+    path('api/auth/verify_username/', auth.verify_username),
     # USER ROUTES
     path('api/users/get/<int:id>/', users.get_user),
     path('api/users/get/', users.get_me),
