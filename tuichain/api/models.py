@@ -34,9 +34,6 @@ class Profile(models.Model):
 
         return result
 
-    def __str__(self): 
-         return self.full_name
-
 class IDVerifications(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="id_verification")
     verification_id = models.CharField(max_length=100, null=True, blank=True)
@@ -67,8 +64,6 @@ class LoanRequest(models.Model):
             'active': self.active
         }
 
-    def __str__(self): 
-         return self.course + " by " + self.school + " from " + self.student.full_name
 
 class Investment(models.Model):
     id = models.AutoField(primary_key=True)
