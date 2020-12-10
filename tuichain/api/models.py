@@ -17,21 +17,22 @@ class Profile(models.Model):
 
     def to_dict(self, private=False):
         result = {
-            'full_name': self.full_name,
+            'id': self.user.id,
+            'username': self.user.username,
+            'created_at': self.user.date_joined,
+            'is_active': self.user.is_active,
             'country': self.country
         }
 
         if private:
-            setattr(result, 'birth_date', self.birth_date)
-            setattr(result, 'address', self.address)
-            setattr(result, 'zip_code', self.zip_code)
-            setattr(result, 'city', self.city)
-            setattr(result, 'id_number', self.id_number)
+            result['full_name'] = self.full_name
+            result['birth_date'] = self.birth_date
+            result['address'] = self.address
+            result['zip_code'] = self.zip_code
+            result['city'] = self.city
+            result['id_number'] = self.id_number
 
         return result
-
-    def __str__(self): 
-         return self.full_name
 
 class IDVerifications(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="id_verification")
@@ -63,8 +64,6 @@ class LoanRequest(models.Model):
             'active': self.active
         }
 
-    def __str__(self): 
-         return self.course + " by " + self.school + " from " + self.student.full_name
 
 class Investment(models.Model):
     id = models.AutoField(primary_key=True)
