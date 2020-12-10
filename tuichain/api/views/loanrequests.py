@@ -40,6 +40,46 @@ def create_loan_request(request):
 
     return Response({'message': 'Loan Request successfully created'},status=HTTP_201_CREATED)
 
+@api_view(["PUT"])
+@permission_classes((IsAdminUser,))
+def validate_loan_request(request, id):
+    """
+    Validate a Loan Request
+    """
+
+    loanrequest = LoanRequest.objects.filter(id=id).first()
+
+    if loanrequest is None:
+        return Response({'error': 'Unexistent Loan Request'},status=HTTP_404_NOT_FOUND)
+
+    if loanrequest.validated:
+        return Response({'error': 'The given Loan Request as already been validated'},status=HTTP_403_FORBIDDEN)
+
+    loanrequest.validated = True
+    loanrequest.save()
+
+    return Response({'message': 'Loan Request has been validated'}, status=HTTP_201_CREATED)
+
+@api_view(["PUT"])
+@permission_classes((IsAdminUser,))
+def close_loan_request(request, id):
+    """
+    Close a Loan Request
+    """
+
+    loanrequest = LoanRequest.objects.filter(id=id).first()
+
+    if loanrequest is None:
+        return Response({'error': 'Unexistent Loan Request'},status=HTTP_404_NOT_FOUND)
+
+    if not loanrequest.active:
+        return Response({'error': 'The given Loan Request as already been closed'},status=HTTP_403_FORBIDDEN)
+
+    loanrequest.active = False
+    loanrequest.save()
+
+    return Response({'message': 'Loan Request has been closed'}, status=HTTP_201_CREATED)
+
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_loan_request(request, id):
