@@ -75,7 +75,7 @@ def close_loan_request(request, id):
     if not loanrequest.active:
         return Response({'error': 'The given Loan Request as already been closed'},status=HTTP_403_FORBIDDEN)
 
-    loanrequest.validated = False
+    loanrequest.active = False
     loanrequest.save()
 
     return Response({'message': 'Loan Request has been closed'}, status=HTTP_201_CREATED)
