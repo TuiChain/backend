@@ -40,7 +40,7 @@ def create_loan_request(request):
 
     return Response({'message': 'Loan Request successfully created'},status=HTTP_201_CREATED)
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @permission_classes((IsAdminUser,))
 def validate_loan_request(request, id):
     """
@@ -60,7 +60,7 @@ def validate_loan_request(request, id):
 
     return Response({'message': 'Loan Request has been validated'}, status=HTTP_201_CREATED)
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @permission_classes((IsAdminUser,))
 def close_loan_request(request, id):
     """
