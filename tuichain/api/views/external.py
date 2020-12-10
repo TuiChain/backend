@@ -31,8 +31,8 @@ def request_id_verification(request):
 
     try:
         verification_intent = create_verification_intent(return_url, refresh_url, user.profile.id_number)
-    except Exception:
-        return Response({'error': 'Could not create verification intent'},status=HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': 'Could not create verification intent', 'details': e.args},status=HTTP_400_BAD_REQUEST)
     
     id_verification = user.id_verification
 
