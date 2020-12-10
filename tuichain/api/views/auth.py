@@ -12,6 +12,7 @@ from rest_framework.status import (
 )
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from tuichain.api.services.email import send_email
 
 @csrf_exempt
 @api_view(["POST"])
@@ -59,6 +60,13 @@ def signup(request):
 
     user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
     user.save()
+
+    send_email(
+        subject="Welcome to Tuichain!", 
+        message="Your Tuichain's account is now created! \n\n Thank you! \n\n Please, complete your Profile with your personal info so you can enjoy the app as a whole.",
+        to_email=email,
+        html_file="email.html"
+    )
 
     token = Token.objects.get(user=user)
     return Response({'message': 'User created with success', 'token': token.key}, status=HTTP_201_CREATED)
