@@ -61,6 +61,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # Heroku Static Files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     # CORS
     'corsheaders.middleware.CorsMiddleware',
     # Django
@@ -71,8 +73,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Heroku Static Files
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'tuichain.urls'
