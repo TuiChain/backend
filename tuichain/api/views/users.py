@@ -26,12 +26,12 @@ def get_user(request, id):
 
     if result is None:
         return Response({'error': 'User with given ID not found'}, status=HTTP_404_NOT_FOUND)
-    
+
     return Response(
         {
-            'message': 'User found with success', 
+            'message': 'User found with success',
             'user': result.profile.to_dict(private=user.id==result.id)
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -45,9 +45,9 @@ def get_me(request):
 
     return Response(
         {
-            'message': 'User gotten with success', 
+            'message': 'User gotten with success',
             'user': user.profile.to_dict(private=True)
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -65,10 +65,10 @@ def get_all(request):
 
     return Response(
         {
-            'message': 'Users fetched with success', 
-            'users': result, 
+            'message': 'Users fetched with success',
+            'users': result,
             'count': len(result)
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -114,8 +114,8 @@ def update_profile(request):
 
     return Response(
         {
-            'message': 'User profile updated with success', 
-            'user': profile.to_dict(private=True), 
-        }, 
+            'message': 'User profile updated with success',
+            'user': profile.to_dict(private=True),
+        },
         status=HTTP_200_OK
     )
