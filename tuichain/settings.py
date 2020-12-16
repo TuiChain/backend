@@ -84,7 +84,11 @@ ROOT_URLCONF = 'tuichain.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': (
+            []
+            if 'REDIRECT_URL' in os.environ
+            else [os.environ['FRONTEND_BUILD_DIR']]
+            ),
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -159,7 +163,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(os.environ.get('FRONTEND_BUILD_DIR', BASE_DIR), 'static'),
 )
 
 
