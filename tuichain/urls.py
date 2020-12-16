@@ -30,10 +30,10 @@ urlpatterns = [
     path('', RedirectView.as_view(url=os.environ['REDIRECT_URL'])),
     path('api/', include(router.urls)),
     # AUTHENTICATION ROUTES
-    path('api/auth/login/', auth.login),
-    path('api/auth/signup/', auth.signup),
-    path('api/auth/verify_email/', auth.verify_email),
-    path('api/auth/verify_username/', auth.verify_username),
+    path('api/auth/login/', auth.login, name='login'),
+    path('api/auth/signup/', auth.signup, name='setup'),
+    path('api/auth/verify_email/', auth.verify_email, name='verify_email'),
+    path('api/auth/verify_username/', auth.verify_username, name='verify_username'),
     # USER ROUTES
     path('api/users/get/<int:id>/', users.get_user),
     path('api/users/get/', users.get_me),
