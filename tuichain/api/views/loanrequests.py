@@ -27,12 +27,12 @@ def create_loan_request(request):
         return Response({'error': 'Required fields: school, course and amount'},status=HTTP_400_BAD_REQUEST)
 
     # TODO: verify if User has complete profile and validated identity
-    
+
     loanrequests = LoanRequest.objects.filter(student=user,active=True)
 
     if len(loanrequests) >= 1:
         return Response({'error': 'An user cannot create Loan Requests when it has one currently undergoing'}, status=HTTP_400_BAD_REQUEST)
-    
+
     # ...
 
     loanrequest = LoanRequest.objects.create(student=user, school=school, course=course, amount=amount)
@@ -96,9 +96,9 @@ def get_loan_request(request, id):
 
     return Response(
         {
-            'message': 'Loan Request found with success', 
+            'message': 'Loan Request found with success',
             'loan_request': loanrequest.to_dict()
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -117,10 +117,10 @@ def get_personal_loan_requests(request):
 
     return Response(
         {
-            'message': 'Loan Requests fetched with success', 
-            'loanrequests': result, 
+            'message': 'Loan Requests fetched with success',
+            'loanrequests': result,
             'count': len(result)
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -138,10 +138,10 @@ def get_all_loan_requests(request):
 
     return Response(
         {
-            'message': 'Loan Requests fetched with success', 
-            'loanrequests': result, 
+            'message': 'Loan Requests fetched with success',
+            'loanrequests': result,
             'count': len(result)
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -163,12 +163,12 @@ def get_loan_request_investments(request, id):
 
     return Response(
         {
-            'message': 'Investments fetched with success for the given Loan Request', 
+            'message': 'Investments fetched with success for the given Loan Request',
             'count': len(result),
             'investments': result
-        }, 
+        },
         status=HTTP_200_OK
     )
 
 
-    
+
