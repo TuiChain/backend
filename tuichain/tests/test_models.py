@@ -73,22 +73,22 @@ class IDVerificationsModelTest(TestCase):
         )
     
     def test_user_label(self):
-        idverifications = Profile.objects.get(id=1)
+        idverifications = IDVerifications.objects.get(id=1)
         field_label = idverifications._meta.get_field('user').verbose_name
         self.assertEqual(field_label, 'test')
     
     def test_verification_id_label(self):
-        idverifications = Profile.objects.get(id=1)
+        idverifications = IDVerifications.objects.get(id=1)
         field_label = idverifications._meta.get_field('verification_id').verbose_name
         self.assertEqual(field_label, '1')
     
     def test_person_id_label(self):
-        idverifications = Profile.objects.get(id=1)
+        idverifications = IDVerifications.objects.get(id=1)
         field_label = idverifications._meta.get_field('person_id').verbose_name
         self.assertEqual(field_label, '1')
     
     def test_validated_label(self):
-        idverifications = Profile.objects.get(id=1)
+        idverifications = IDVerifications.objects.get(id=1)
         field_label = idverifications._meta.get_field('validated').verbose_name
         self.assertEqual(field_label, 'False')
 
@@ -110,41 +110,80 @@ class LoanRequestModelTest(TestCase):
         )
     
     def test_id_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('id').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('id').verbose_name
         self.assertEqual(field_label, '1')
     
     def test_student_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('student').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('student').verbose_name
         self.assertEqual(field_label, '1')
     
     def test_request_date_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('request_date').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('request_date').verbose_name
         self.assertEqual(field_label, datetime.now())
 
     def test_school_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('school').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('school').verbose_name
         self.assertEqual(field_label, 'test school')
     
     def test_course_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('course').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('course').verbose_name
         self.assertEqual(field_label, 'test course')
 
     def test_amount_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('amount').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('amount').verbose_name
         self.assertEqual(field_label, '1000')
 
     def test_validated_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('validated').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('validated').verbose_name
         self.assertEqual(field_label, 'False')
 
     def test_active_label(self):
-        idverifications = Profile.objects.get(id=1)
-        field_label = idverifications._meta.get_field('active').verbose_name
+        loanrequest = LoanRequest.objects.get(id=1)
+        field_label = loanrequest._meta.get_field('active').verbose_name
+        self.assertEqual(field_label, 'True')
+
+
+class InvestmentModelTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        # Set up non-modified objects used by all test methods
+        Investment.objects.create(
+            id='1',
+            investor='1',
+            request='1',
+            amount='500'
+            active='True'
+        )
+    
+    def test_id_label(self):
+        investment = Investment.objects.get(id=1)
+        field_label = investment._meta.get_field('id').verbose_name
+        self.assertEqual(field_label, '1')
+    
+    def test_investor_label(self):
+        investment = Investment.objects.get(id=1)
+        field_label = investment._meta.get_field('investor').verbose_name
+        self.assertEqual(field_label, '1')
+    
+    def test_request_label(self):
+        investment = Investment.objects.get(id=1)
+        field_label = investment._meta.get_field('request').verbose_name
+        self.assertEqual(field_label, '1')
+
+    def test_amount_label(self):
+        investment = Investment.objects.get(id=1)
+        field_label = investment._meta.get_field('amount').verbose_name
+        self.assertEqual(field_label, '500')
+    
+    def test_course_label(self):
+        investment = Investment.objects.get(id=1)
+        field_label = investment._meta.get_field('active').verbose_name
         self.assertEqual(field_label, 'True')
