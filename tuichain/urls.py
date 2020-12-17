@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.conf.urls import url
 from django.urls import path, include
+from django.shortcuts import render
 from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework import routers
@@ -26,8 +27,14 @@ schema_view = get_schema_view(
 
 router = routers.DefaultRouter()
 
+index = (
+    RedirectView.as_view(url=os.environ['REDIRECT_URL'])
+    if 'REDIRECT_URL' in os.environ
+    else lambda request: render(request, "index.html")
+    )
+
 urlpatterns = [
-    path('', RedirectView.as_view(url=os.environ['REDIRECT_URL'])),
+    path('', index),
     path('api/', include(router.urls)),
     # AUTHENTICATION ROUTES
     path('api/auth/login/', auth.login),
