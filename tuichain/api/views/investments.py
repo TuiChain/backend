@@ -55,8 +55,8 @@ def create_investment(request):
         loanrequest.save()
 
         return Response({'message': 'Investment created with success'}, status=HTTP_201_CREATED)
-            
-    else: 
+
+    else:
         return Response({'error': 'An Investment with that amount is not possible at the moment'}, status=HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
@@ -74,10 +74,10 @@ def get_personal_investments(request):
 
     return Response(
         {
-            'message': 'Investments fetched with success', 
-            'investments': result, 
+            'message': 'Investments fetched with success',
+            'investments': result,
             'count': len(result)
-        }, 
+        },
         status=HTTP_200_OK
     )
 
@@ -97,8 +97,8 @@ def get_investment(request, id):
 
     return Response(
         {
-            'message': 'Investment found with success', 
+            'message': 'Investment found with success',
             'investment': investment.to_dict()
-        }, 
+        },
         status=HTTP_200_OK
     )

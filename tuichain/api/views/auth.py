@@ -62,7 +62,7 @@ def signup(request):
     user.save()
 
     send_email(
-        subject="Welcome to Tuichain!", 
+        subject="Welcome to Tuichain!",
         message="Your Tuichain's account is now created! \n\n Thank you! \n\n Please, complete your Profile with your personal info so you can enjoy the app as a whole.",
         to_email=email,
         html_file="email.html"
@@ -87,7 +87,7 @@ def verify_email(request):
 
     if user is None:
         return Response({'message': 'The given email is valid for signup'}, status=HTTP_200_OK)
-    
+
     return Response({'error': 'Email already taken, please try another one'},status=HTTP_400_BAD_REQUEST)
 
 
@@ -106,5 +106,5 @@ def verify_username(request):
 
     if user is None:
         return Response({'message': 'The given username is valid for signup'}, status=HTTP_200_OK)
-    
+
     return Response({'error': 'Username already taken, please try another one'},status=HTTP_400_BAD_REQUEST)
