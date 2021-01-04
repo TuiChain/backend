@@ -14,3 +14,17 @@ def send_email(subject="Tuichain", message="Hi there!", from_email=None, to_emai
         html_message=html_message,
         fail_silently=False,
     )
+
+def send_email_password(subject="Reset Tuichain Password", message="Hi there!", from_email=None, to_email="tuichain2020@gmail.com", html_file=None, token=None, id=None):
+    html_message = None
+    if html_file is not None:
+        html_message = loader.render_to_string(html_file, {'token': token, 'id': id})
+        
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=from_email,
+        recipient_list=[to_email],
+        html_message=html_message,
+        fail_silently=False,
+    )

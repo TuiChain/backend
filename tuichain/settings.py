@@ -172,10 +172,21 @@ REST_FRAMEWORK = {
     # 'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        #'rest_framework.authentication.SessionAuthentication'
     ),
     # 'DEFAULT_PERMISSION_CLASSES':(
     #     'rest_framework.permissions.IsAuthenticated',
     # ),
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
 }
 
 django_heroku.settings(locals())

@@ -8,11 +8,13 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_200_OK,
-    HTTP_201_CREATED
+    HTTP_201_CREATED,
+    HTTP_408_REQUEST_TIMEOUT
 )
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from tuichain.api.services.email import send_email
+from tuichain.api.services.email import send_email, send_email_password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 @csrf_exempt
 @api_view(["POST"])
@@ -108,3 +110,86 @@ def verify_username(request):
         return Response({'message': 'The given username is valid for signup'}, status=HTTP_200_OK)
 
     return Response({'error': 'Username already taken, please try another one'},status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def email_reset_password(request):
+    '''
+    Send email to user's email to change his password
+    Parameters
+    ----------
+    request : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    200
+        Email has been sent to redefine password
+    400
+        Email is required
+    404
+        Email is not registered
+    '''
+    email = request.data.get("email")
+    
+    if email is None:
+        return Response({'error': 'Required fields: email'},status=HTTP_400_BAD_REQUEST)
+    
+    user = User.objects.filter(email=email).first()
+    
+    if user is None:
+        return Response({'error': 'The given email is not registered in our platform'}, status=HTTP_404_NOT_FOUND)
+    
+    id_number = str(user.pk)
+    token = str(PasswordResetTokenGenerator().make_token(user))
+    send_email_password(
+        subject="Redefine TuiChain Password",
+        message="You have requested a password change for the account associated with this email \n\n If this email is not intended for you, please ignore it. \n\n Use the following link to redefine your password: http://127.0.0.1:8000/api/auth/reset_password/" + id_number + "/" + token + "/ \n\n Thank you for using TuiChain!",
+        to_email=email,
+        token=token,
+        id=id_number,
+        html_file="redefine_password.html"
+    )
+
+    return Response({'message': 'Email has been sent to redefine password'}, status=HTTP_200_OK)
+
+@api_view(["PUT"])
+@permission_classes((AllowAny,))
+def reset_password(request, id, token):
+    '''
+    Parameters
+    ----------
+    request : TYPE
+        DESCRIPTION.
+    id : int
+        User identification number.
+    token : string
+        Token with timestamp enable password reset.
+
+    Returns
+    -------
+    200
+        Password has been reset.
+    400
+        Password is required.
+    408
+        Token has expired.
+    '''
+    pwd = request.data.get("password")
+    if pwd is None:
+        return Response({'error': 'Required fields: password'},status=HTTP_400_BAD_REQUEST)
+    
+    user = User.objects.filter(pk=id).first()
+    # This should never happen
+    #if user is None:
+    #    return Response({'error': 'The given user is not registered in our platform'}, status=HTTP_404_NOT_FOUND)
+    
+    if PasswordResetTokenGenerator().check_token(user, token) is True:
+        user.set_password(pwd)
+        user.save()
+        
+        return Response({'message': 'Password has been reset'}, status=HTTP_200_OK)
+    else:
+        return Response({'error': 'Password reset link has expired'}, status=HTTP_408_REQUEST_TIMEOUT)
+        
