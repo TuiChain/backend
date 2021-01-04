@@ -146,6 +146,26 @@ def get_all_loan_requests(request):
     )
 
 @api_view(["GET"])
+@permission_classes((IsAdminUser,))
+def get_non_validated_loan_requests(request):
+    """
+    Get all active and non_validated loan requests
+    """
+
+    loanrequest_list = LoanRequest.objects.filter(active=True, validated=False)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            'message': 'Loan Requests fetched with success',
+            'loanrequests': result,
+            'count': len(result)
+        },
+        status=HTTP_200_OK
+    )
+
+@api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_loan_request_investments(request, id):
     """
