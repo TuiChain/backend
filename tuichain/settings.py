@@ -179,14 +179,14 @@ REST_FRAMEWORK = {
     # ),
 }
 
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
-        }
-    },
-}
+# SWAGGER_SETTINGS = {
+#     'SECURITY_DEFINITIONS': {
+#         'Bearer': {
+#             'type': 'apiKey',
+#             'in': 'header',
+#             'name': 'Authorization'
+#         }
+#     },
+# }
 
 django_heroku.settings(locals())
