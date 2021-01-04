@@ -22,6 +22,7 @@ schema_view = get_schema_view(
    ),
    public=True,
    permission_classes=[permissions.AllowAny],
+   validators=['ssv'],
 )
 
 
@@ -41,6 +42,8 @@ urlpatterns = [
     path('api/auth/signup/', auth.signup),
     path('api/auth/verify_email/', auth.verify_email),
     path('api/auth/verify_username/', auth.verify_username),
+    path('api/auth/reset_password/<int:id>/<str:token>/', auth.reset_password),
+    path('api/auth/email_reset_password/', auth.email_reset_password),
     # USER ROUTES
     path('api/users/get/<int:id>/', users.get_user),
     path('api/users/get/', users.get_me),
