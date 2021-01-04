@@ -41,7 +41,7 @@ def login(request):
 @permission_classes((AllowAny,))
 def signup(request):
     """
-    Create a new User
+    Create a new user
     """
     username = request.data.get("username")
     email = request.data.get("email")
@@ -115,22 +115,9 @@ def verify_username(request):
 @api_view(["POST"])
 @permission_classes((AllowAny,))
 def email_reset_password(request):
-    '''
+    """
     Send email to user's email to change his password
-    Parameters
-    ----------
-    request : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    200
-        Email has been sent to redefine password
-    400
-        Email is required
-    404
-        Email is not registered
-    '''
+    """
     email = request.data.get("email")
     
     if email is None:
@@ -157,25 +144,9 @@ def email_reset_password(request):
 @api_view(["PUT"])
 @permission_classes((AllowAny,))
 def reset_password(request, id, token):
-    '''
-    Parameters
-    ----------
-    request : TYPE
-        DESCRIPTION.
-    id : int
-        User identification number.
-    token : string
-        Token with timestamp enable password reset.
-
-    Returns
-    -------
-    200
-        Password has been reset.
-    400
-        Password is required.
-    408
-        Token has expired.
-    '''
+    """
+    Resets User's password
+    """
     pwd = request.data.get("password")
     if pwd is None:
         return Response({'error': 'Required fields: password'},status=HTTP_400_BAD_REQUEST)
