@@ -68,6 +68,15 @@ urlpatterns = [
         "api/loanrequests/get_personal/",
         loanrequests.get_personal_loan_requests,
     ),
+    path("api/loanrequests/get_all/", loanrequests.get_all_loan_requests),
+    path(
+        "api/loanrequests/get_non_validated/",
+        loanrequests.get_non_validated_loan_requests,
+    ),
+    path(
+        "api/loanrequests/get_state/<int:id>",
+        loanrequests.get_specific_state_loan_requests,
+    ),
     path("api/loanrequests/get/<int:id>/", loanrequests.get_loan_request),
     path(
         "api/loanrequests/get/<int:id>/investments/",
