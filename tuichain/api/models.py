@@ -65,15 +65,14 @@ class LoanRequest(models.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
-            "student": self.student.id,
-            "request_date": self.request_date,
-            "school": self.school,
-            "course": self.course,
-            "amount": self.amount,
-            "current_amount": self.current_amount,
-            "validated": self.validated,
-            "active": self.active,
+            'id': self.id,
+            'student': self.student.id,
+            'request_date': self.request_date,
+            'school': self.school,
+            'course': self.course,
+            'amount': self.amount,
+            'current_amount': self.current_amount,
+            'status': self.status
         }
 
 
