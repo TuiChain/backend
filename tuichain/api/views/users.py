@@ -85,13 +85,14 @@ def update_profile(request):
 
     user = request.user
 
-    full_name = request.data.get("full_name")
-    birth_date = request.data.get("birth_date")
-    address = request.data.get("address")
-    zip_code = request.data.get("zip_code")
-    country = request.data.get("country")
-    city = request.data.get("city")
-    id_number = request.data.get("id_number")
+    full_name = request.data.get('full_name')
+    birth_date = request.data.get('birth_date')
+    address = request.data.get('address')
+    zip_code = request.data.get('zip_code')
+    country = request.data.get('country')
+    city = request.data.get('city')
+    id_number = request.data.get('id_number')
+    short_bio = request.data.get('short_bio')
 
     profile = user.profile
 
@@ -110,6 +111,8 @@ def update_profile(request):
             profile.city = city
         if id_number is not None:
             profile.id_number = id_number
+        if short_bio is not None:
+            profile.short_bio = short_bio
 
         profile.save()
 

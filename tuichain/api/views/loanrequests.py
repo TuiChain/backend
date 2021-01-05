@@ -32,7 +32,7 @@ def create_loan_request(request):
 
     # TODO: verify if User has complete profile and validated identity
 
-    loanrequests = LoanRequest.objects.filter(student=user, active=True)
+    loanrequests = LoanRequest.objects.filter(student=user).exclude(status=3).exclude(status=4).exclude(status=5)
 
     if len(loanrequests) >= 1:
         return Response(
@@ -75,7 +75,7 @@ def validate_loan_request(request, id):
             status=HTTP_403_FORBIDDEN,
         )
 
-    loanrequest.validated = True
+    loanrequest.status = 1
     loanrequest.save()
 
     return Response(
@@ -103,7 +103,7 @@ def close_loan_request(request, id):
             status=HTTP_403_FORBIDDEN,
         )
 
-    loanrequest.active = False
+    loanrequest.status = 5
     loanrequest.save()
 
     return Response(
@@ -167,7 +167,7 @@ def get_all_loan_requests(request):
     Get all active loan requests
     """
 
-    loanrequest_list = LoanRequest.objects.filter(active=True)
+    loanrequest_list = LoanRequest.objects.exclude(status=3).exclude(status=4).exclude(status=5)
 
     result = [obj.to_dict() for obj in loanrequest_list]
 
@@ -188,7 +188,7 @@ def get_non_validated_loan_requests(request):
     Get all active and non_validated loan requests
     """
 
-    loanrequest_list = LoanRequest.objects.filter(active=True, validated=False)
+    loanrequest_list = LoanRequest.objects.filter(status=1)
 
     result = [obj.to_dict() for obj in loanrequest_list]
 

@@ -16,6 +16,7 @@ class Profile(models.Model):
     zip_code = models.CharField(max_length=20, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
+    short_bio = models.CharField(max_length=500, null=True, blank=True)
     id_number = models.IntegerField(null=True, blank=True)
 
     def to_dict(self, private=False):
@@ -53,12 +54,14 @@ class LoanRequest(models.Model):
     request_date = models.DateTimeField(auto_now_add=True)
     school = models.CharField(max_length=100)
     course = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     current_amount = models.DecimalField(
-        max_digits=8, decimal_places=2, default="0.00"
-    )
-    validated = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
+        max_digits=8, decimal_places=2, default='0.00'
+        )
+    description = models.CharField(max_length=500)
+    # 0 - pending; 1 - funding; 2 - active; 3 - finished; 4 - expired; 5 - cancelled;
+    status = models.IntegerField(default=0)
 
     def to_dict(self):
         return {
