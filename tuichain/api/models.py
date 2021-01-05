@@ -32,6 +32,7 @@ class Profile(models.Model):
             result['zip_code'] = self.zip_code
             result['city'] = self.city
             result['id_number'] = self.id_number
+            result['short_bio'] = self.short_bio
 
         return result
 
@@ -63,8 +64,7 @@ class LoanRequest(models.Model):
             'course': self.course,
             'amount': self.amount,
             'current_amount': self.current_amount,
-            'validated': self.validated,
-            'active': self.active
+            'status': self.status
         }
 
 
