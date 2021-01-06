@@ -54,6 +54,7 @@ def create_loan_request(request):
         status=HTTP_201_CREATED,
     )
 
+
 @api_view(["PUT"])
 @permission_classes((IsAuthenticated,))
 def cancel_loan_request(request, id):
@@ -64,7 +65,7 @@ def cancel_loan_request(request, id):
     user = request.user
 
     loanrequest = LoanRequest.objects.filter(id=id).first()
-    
+
     if loanrequest is None:
         return Response(
             {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
@@ -72,9 +73,10 @@ def cancel_loan_request(request, id):
 
     if loanrequest.student is not user:
         return Response(
-            {"error": "Loan Request does not belong to logged user"}, status=HTTP_403_FORBIDDEN
+            {"error": "Loan Request does not belong to logged user"},
+            status=HTTP_403_FORBIDDEN,
         )
-    
+
     # verificar se loan request está pending (esperar pelo PR do milhazes)
 
     return Response(

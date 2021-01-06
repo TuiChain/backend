@@ -42,7 +42,11 @@ def login(request):
 
     token = Token.objects.get(user=user)
     return Response(
-        {"message": "User logged in with success", "token": token.key, "is_admin": user.is_superuser},
+        {
+            "message": "User logged in with success",
+            "token": token.key,
+            "is_admin": user.is_superuser,
+        },
         status=HTTP_200_OK,
     )
 
