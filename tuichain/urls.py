@@ -59,8 +59,6 @@ urlpatterns = [
     path('api/loanrequests/validate/<int:id>/', loanrequests.validate_loan_request),
     path('api/loanrequests/close/<int:id>/', loanrequests.close_loan_request),
     path('api/loanrequests/get_personal/', loanrequests.get_personal_loan_requests),
-    path('api/loanrequests/get_all/', loanrequests.get_all_loan_requests),
-    path('api/loanrequests/get_non_validated/', loanrequests.get_non_validated_loan_requests),
     path('api/loanrequests/get/<int:id>/', loanrequests.get_loan_request),
     path('api/loanrequests/get/<int:id>/investments/', loanrequests.get_loan_request_investments),
     # DOCUMENTATION ROUTES
