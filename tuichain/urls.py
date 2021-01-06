@@ -58,24 +58,19 @@ urlpatterns = [
     path("api/investments/get_personal/", investments.get_personal_investments),
     path("api/investments/get/<int:id>/", investments.get_investment),
     # LOAN REQUESTS ROUTES
-    path("api/loanrequests/new/", loanrequests.create_loan_request),
+    path('api/loanrequests/new/', loanrequests.create_loan_request),
     path(
-        "api/loanrequests/validate/<int:id>/",
-        loanrequests.validate_loan_request,
+        'api/loanrequests/validate/<int:id>/', 
+        loanrequests.validate_loan_request
     ),
-    path("api/loanrequests/close/<int:id>/", loanrequests.close_loan_request),
+    path('api/loanrequests/close/<int:id>/', loanrequests.close_loan_request),
     path(
-        "api/loanrequests/get_personal/",
+        'api/loanrequests/get_personal/',
         loanrequests.get_personal_loan_requests,
     ),
-    path("api/loanrequests/get_all/", loanrequests.get_all_loan_requests),
+    path('api/loanrequests/get/<int:id>/', loanrequests.get_loan_request),
     path(
-        "api/loanrequests/get_non_validated/",
-        loanrequests.get_non_validated_loan_requests,
-    ),
-    path("api/loanrequests/get/<int:id>/", loanrequests.get_loan_request),
-    path(
-        "api/loanrequests/get/<int:id>/investments/",
+        'api/loanrequests/get/<int:id>/investments/',
         loanrequests.get_loan_request_investments,
     ),
     # DOCUMENTATION ROUTES
