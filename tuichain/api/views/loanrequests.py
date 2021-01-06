@@ -242,13 +242,14 @@ def get_specific_state_loan_requests(request, status):
     )
 
 @api_view(["GET"])
-@permission_classes((IsAdminUser,))
+@permission_classes((IsAuthenticated,))
 def get_specific_state_loan_requests(request, status):
     """
     Get all loan requests at a given state
     """
+    user = request.user
 
-    loanrequest_list = LoanRequest.objects.filter(status=status)
+    loanrequest_list = LoanRequest.objects.filter(student=user, status=status)
 
     result = [obj.to_dict() for obj in loanrequest_list]
 
