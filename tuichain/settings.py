@@ -170,23 +170,25 @@ STATICFILES_DIRS = (
 REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         #'rest_framework.authentication.SessionAuthentication'
     ),
-    # 'DEFAULT_PERMISSION_CLASSES':(
+     'DEFAULT_PERMISSION_CLASSES':(
     #     'rest_framework.permissions.IsAuthenticated',
-    # ),
+    'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+     ),
 }
 
-# SWAGGER_SETTINGS = {
-#     'SECURITY_DEFINITIONS': {
-#         'Bearer': {
-#             'type': 'apiKey',
-#             'in': 'header',
-#             'name': 'Authorization'
-#         }
-#     },
-# }
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+        }
+    },
+}
 
 django_heroku.settings(locals())
