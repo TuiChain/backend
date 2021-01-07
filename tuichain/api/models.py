@@ -104,5 +104,3 @@ def save_user_profile_idverification(sender, instance, **kwargs):
     # print('SIGNAL: save user profile')
     instance.profile.save()
     instance.id_verification.save()
-
-
