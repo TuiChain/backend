@@ -122,7 +122,14 @@ def cancel_loan_request(request, id):
             status=HTTP_403_FORBIDDEN,
         )
 
-    # verificar se loan request está pending (esperar pelo PR do milhazes)
+    if loanrequest.status > 0:
+        return Response(
+            {"error": "That Loan Request cannot be cancelled already"},
+            status=HTTP_400_BAD_REQUEST,
+        )
+
+    # set status as cancelled
+    loanrequest.status = 5
 
     return Response(
         {"message": "Loan Request has been canceled"}, status=HTTP_201_CREATED
