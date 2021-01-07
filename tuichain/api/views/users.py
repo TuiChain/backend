@@ -18,6 +18,21 @@ from django.core import serializers
 def get_user(request, id):
     """
     Get User with given ID
+
+    Parameters
+    ----------
+    id : integer
+
+        User's identifier.
+
+    Returns
+    -------
+    200
+        User found with success.
+
+    404
+        user not found.
+
     """
 
     user = request.user
@@ -25,30 +40,43 @@ def get_user(request, id):
     result = User.objects.filter(id=id).first()
 
     if result is None:
-        return Response({'error': 'User with given ID not found'}, status=HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "User with given ID not found"}, status=HTTP_404_NOT_FOUND
+        )
 
     return Response(
         {
-            'message': 'User found with success',
-            'user': result.profile.to_dict(private=user.id==result.id)
+            "message": "User found with success",
+            "user": result.profile.to_dict(private=user.id == result.id),
         },
-        status=HTTP_200_OK
+        status=HTTP_200_OK,
     )
+
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_me(request):
     """
     Get personal profile
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        User fetched successfully.
+
     """
+
     user = request.user
 
     return Response(
         {
-            'message': 'User gotten with success',
-            'user': user.profile.to_dict(private=True)
+            "message": "User gotten with success",
+            "user": user.profile.to_dict(private=True),
         },
-        status=HTTP_200_OK
+        status=HTTP_200_OK,
     )
 
 
@@ -57,6 +85,15 @@ def get_me(request):
 def get_all(request):
     """
     Get all users (public profile)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        Users fetched successfully.
+
     """
 
     user_list = User.objects.all()
@@ -65,29 +102,71 @@ def get_all(request):
 
     return Response(
         {
-            'message': 'Users fetched with success',
-            'users': result,
-            'count': len(result)
+            "message": "Users fetched with success",
+            "users": result,
+            "count": len(result),
         },
-        status=HTTP_200_OK
+        status=HTTP_200_OK,
     )
+
 
 @api_view(["PUT"])
 @permission_classes((IsAuthenticated,))
 def update_profile(request):
     """
     Update profile of authenticated user
+
+    Parameters
+    ----------
+    full_name : string
+
+        User's full_name.
+
+    birth_date : date
+
+        User's birth date.
+
+    address : string
+
+        User's home address.
+
+    zip_code : string
+
+        User's home zip code.
+
+    country : string
+
+        User's country.
+
+    city : string
+
+        User's city.
+
+    id_number : integer
+
+        User's idnetifier.
+
+    Returns
+    -------
+    200
+        User's profile updated with success.
+
+    400
+        Could not update profile
+
     """
 
     user = request.user
 
-    full_name = request.data.get('full_name')
-    birth_date = request.data.get('birth_date')
-    address = request.data.get('address')
-    zip_code = request.data.get('zip_code')
-    country = request.data.get('country')
-    city = request.data.get('city')
-    id_number = request.data.get('id_number')
+    full_name = request.data.get("full_name")
+    birth_date = request.data.get("birth_date")
+    address = request.data.get("address")
+    zip_code = request.data.get("zip_code")
+    country = request.data.get("country")
+    city = request.data.get("city")
+    id_number = request.data.get("id_number")
+    short_bio = request.data.get("short_bio")
+    profile_image = request.data.get("profile_image")
 
     profile = user.profile
 
@@ -106,16 +185,23 @@ def update_profile(request):
             profile.city = city
         if id_number is not None:
             profile.id_number = id_number
+        if short_bio is not None:
+            profile.short_bio = short_bio
+        if profile_image is not None:
+            profile.profile_image = profile_image
 
         profile.save()
 
     except Exception as e:
-        return Response({'error': 'Could not update the profile', 'details': e.args},status=HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Could not update the profile", "details": e.args},
+            status=HTTP_400_BAD_REQUEST,
+        )
 
     return Response(
         {
-            'message': 'User profile updated with success',
-            'user': profile.to_dict(private=True),
+            "message": "User profile updated with success",
+            "user": profile.to_dict(private=True),
         },
-        status=HTTP_200_OK
+        status=HTTP_200_OK,
     )
