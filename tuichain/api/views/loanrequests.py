@@ -167,7 +167,9 @@ def get_all_loan_requests(request):
     Get all active loan requests
     """
 
-    loanrequest_list = LoanRequest.objects.filter(active=True)
+    q = LoanRequest.objects.filter(status=0)
+    q = q.filter(status=1)
+    loanrequest_list = q.filter(status=2)
 
     result = [obj.to_dict() for obj in loanrequest_list]
 
@@ -188,7 +190,7 @@ def get_non_validated_loan_requests(request):
     Get all active and non_validated loan requests
     """
 
-    loanrequest_list = LoanRequest.objects.filter(active=True, validated=False)
+    loanrequest_list = LoanRequest.objects.filter(status=0)
 
     result = [obj.to_dict() for obj in loanrequest_list]
 
