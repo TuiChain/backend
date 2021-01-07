@@ -41,9 +41,9 @@ def create_loan_request(request):
     # TODO: verify if User has complete profile and validated identity
 
     q = LoanRequest.objects.filter(student=user)
-    q = q.filter(status=0)
-    q = q.filter(status=1)
-    loanrequests = q.filter(status=2)
+    q = q.exclude(status=3)
+    q = q.exclude(status=4)
+    loanrequests = q.exclude(status=5)
 
     if len(loanrequests) >= 1:
         return Response(
@@ -163,6 +163,94 @@ def get_personal_loan_requests(request):
     user = request.user
 
     loanrequest_list = LoanRequest.objects.filter(student=user)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_all_loan_requests(request):
+    """
+    Get all active loan requests
+    """
+
+    q = LoanRequest.objects.exclude(status=3)
+    q = q.exclude(status=4)
+    loanrequest_list = q.exclude(status=5)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAdminUser,))
+def get_non_validated_loan_requests(request):
+    """
+    Get all active and non_validated loan requests
+    """
+
+    loanrequest_list = LoanRequest.objects.filter(status=0)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_specific_state_loan_requests(request, status):
+    """
+    Get all loan requests at a given state
+    """
+    user = request.user
+
+    loanrequest_list = LoanRequest.objects.filter(student=user, status=status)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_specific_state_loan_requests(request, status):
+    """
+    Get all loan requests at a given state
+    """
+    user = request.user
+
+    loanrequest_list = LoanRequest.objects.filter(student=user, status=status)
 
     result = [obj.to_dict() for obj in loanrequest_list]
 
