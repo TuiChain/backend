@@ -20,17 +20,23 @@ def create_loan_request(request):
     """
     user = request.user
 
-    school = request.data.get('school')
-    course = request.data.get('course')
-    amount = request.data.get('amount')
-    destination = request.data.get('destination')
-    description = request.data.get('description')
+    school = request.data.get("school")
+    course = request.data.get("course")
+    amount = request.data.get("amount")
+    destination = request.data.get("destination")
+    description = request.data.get("description")
 
-    if school is None or course is None or amount is None or destination is None or description is None:
+    if (
+        school is None
+        or course is None
+        or amount is None
+        or destination is None
+        or description is None
+    ):
         return Response(
-            {'error': 'Required fields: school, course and amount'},
-            status=HTTP_400_BAD_REQUEST
-            )
+            {"error": "Required fields: school, course and amount"},
+            status=HTTP_400_BAD_REQUEST,
+        )
 
     # TODO: verify if User has complete profile and validated identity
 
@@ -50,8 +56,13 @@ def create_loan_request(request):
     # ...
 
     loanrequest = LoanRequest.objects.create(
-        student=user, school=school, course=course, amount=amount, destination=destination, description=description
-        )
+        student=user,
+        school=school,
+        course=course,
+        amount=amount,
+        destination=destination,
+        description=description,
+    )
     loanrequest.save()
 
     return Response(
@@ -163,6 +174,7 @@ def get_personal_loan_requests(request):
         },
         status=HTTP_200_OK,
     )
+
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))

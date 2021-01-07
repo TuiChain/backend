@@ -17,27 +17,29 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
     short_bio = models.CharField(max_length=500, null=True, blank=True)
-    profile_image = models.FileField(upload_to='media/photos', null=True, blank=True)
+    profile_image = models.FileField(
+        upload_to="media/photos", null=True, blank=True
+    )
     id_number = models.IntegerField(null=True, blank=True)
 
     def to_dict(self, private=False):
         result = {
-            'id': self.user.id,
-            'username': self.user.username,
-            'created_at': self.user.date_joined,
-            'is_active': self.user.is_active,
-            'country': self.country,
-            'short_bio': self.short_bio,
-            'profile_image': self.profile_image
+            "id": self.user.id,
+            "username": self.user.username,
+            "created_at": self.user.date_joined,
+            "is_active": self.user.is_active,
+            "country": self.country,
+            "short_bio": self.short_bio,
+            "profile_image": self.profile_image,
         }
 
         if private:
-            result['full_name'] = self.full_name
-            result['birth_date'] = self.birth_date
-            result['address'] = self.address
-            result['zip_code'] = self.zip_code
-            result['city'] = self.city
-            result['id_number'] = self.id_number
+            result["full_name"] = self.full_name
+            result["birth_date"] = self.birth_date
+            result["address"] = self.address
+            result["zip_code"] = self.zip_code
+            result["city"] = self.city
+            result["id_number"] = self.id_number
 
         return result
 
@@ -60,7 +62,7 @@ class LoanRequest(models.Model):
     destination = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     current_amount = models.DecimalField(
-        max_digits=8, decimal_places=2, default='0.00'
+        max_digits=8, decimal_places=2, default="0.00"
     )
     description = models.CharField(max_length=5000)
     # 0 - pending; 1 - funding; 2 - active; 3 - finished; 4 - expired; 5 - cancelled;
@@ -68,16 +70,16 @@ class LoanRequest(models.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'student': self.student.id,
-            'request_date': self.request_date,
-            'school': self.school,
-            'course': self.course,
-            'destination': self.destination,
-            'amount': self.amount,
-            'current_amount': self.current_amount,
-            'description': self.description,
-            'status': self.status
+            "id": self.id,
+            "student": self.student.id,
+            "request_date": self.request_date,
+            "school": self.school,
+            "course": self.course,
+            "destination": self.destination,
+            "amount": self.amount,
+            "current_amount": self.current_amount,
+            "description": self.description,
+            "status": self.status,
         }
 
 

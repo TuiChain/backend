@@ -85,15 +85,15 @@ def update_profile(request):
 
     user = request.user
 
-    full_name = request.data.get('full_name')
-    birth_date = request.data.get('birth_date')
-    address = request.data.get('address')
-    zip_code = request.data.get('zip_code')
-    country = request.data.get('country')
-    city = request.data.get('city')
-    id_number = request.data.get('id_number')
-    short_bio = request.data.get('short_bio')
-    profile_image = request.data.get('profile_image')
+    full_name = request.data.get("full_name")
+    birth_date = request.data.get("birth_date")
+    address = request.data.get("address")
+    zip_code = request.data.get("zip_code")
+    country = request.data.get("country")
+    city = request.data.get("city")
+    id_number = request.data.get("id_number")
+    short_bio = request.data.get("short_bio")
+    profile_image = request.data.get("profile_image")
 
     profile = user.profile
 
