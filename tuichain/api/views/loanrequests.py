@@ -234,12 +234,13 @@ def get_specific_state_loan_requests(request, status):
 
     return Response(
         {
-            'message': 'Loan Requests fetched with success',
-            'loanrequests': result,
-            'count': len(result)
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
         },
-        status=HTTP_200_OK
+        status=HTTP_200_OK,
     )
+
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
