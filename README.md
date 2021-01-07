@@ -1,5 +1,9 @@
-# backend
-Backend Repository for the TuiChain Application
+
+# TuiChain: Backend
+
+[![Build status](https://github.com/TuiChain/backend/workflows/build/badge.svg?branch=main)](https://github.com/TuiChain/backend/actions)
+
+Repository for the backend component of the TuiChain application.
 
 ## startup
 

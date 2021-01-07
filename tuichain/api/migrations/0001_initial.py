@@ -15,41 +15,94 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('full_name', models.CharField(blank=True, max_length=200, null=True)),
-                ('birth_date', models.DateField(blank=True, null=True)),
-                ('address', models.CharField(blank=True, max_length=200, null=True)),
-                ('zip_code', models.CharField(blank=True, max_length=20, null=True)),
-                ('city', models.CharField(blank=True, max_length=100, null=True)),
-                ('country', models.CharField(blank=True, max_length=100, null=True)),
-                ('id_number', models.IntegerField(blank=True, null=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "full_name",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("birth_date", models.DateField(blank=True, null=True)),
+                (
+                    "address",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                (
+                    "zip_code",
+                    models.CharField(blank=True, max_length=20, null=True),
+                ),
+                (
+                    "city",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "country",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("id_number", models.IntegerField(blank=True, null=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='LoanRequest',
+            name="LoanRequest",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('request_date', models.DateTimeField(auto_now_add=True)),
-                ('school', models.CharField(max_length=100)),
-                ('course', models.CharField(max_length=100)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=8)),
-                ('current_amount', models.DecimalField(decimal_places=2, default='0.00', max_digits=8)),
-                ('validated', models.BooleanField(default=False)),
-                ('active', models.BooleanField(default=True)),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("request_date", models.DateTimeField(auto_now_add=True)),
+                ("school", models.CharField(max_length=100)),
+                ("course", models.CharField(max_length=100)),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=8)),
+                (
+                    "current_amount",
+                    models.DecimalField(
+                        decimal_places=2, default="0.00", max_digits=8
+                    ),
+                ),
+                ("validated", models.BooleanField(default=False)),
+                ("active", models.BooleanField(default=True)),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Investment',
+            name="Investment",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=8)),
-                ('investment_date', models.DateTimeField(auto_now_add=True)),
-                ('investor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.loanrequest')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=8)),
+                ("investment_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "investor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "request",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.loanrequest",
+                    ),
+                ),
             ],
         ),
     ]
