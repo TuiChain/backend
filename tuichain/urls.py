@@ -74,7 +74,7 @@ urlpatterns = [
         loanrequests.get_non_validated_loan_requests,
     ),
     path(
-        "api/loanrequests/get_state/<int:id>",
+        "api/loanrequests/get_state/<int:status>/",
         loanrequests.get_specific_state_loan_requests,
     ),
     path("api/loanrequests/get/<int:id>/", loanrequests.get_loan_request),
