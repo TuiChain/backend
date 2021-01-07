@@ -356,7 +356,9 @@ def reset_password(request, id, token):
         user.set_password(pwd)
         user.save()
 
-        return Response({"message": "Password has been reset"}, status=HTTP_200_OK)
+        return Response(
+            {"message": "Password has been reset"}, status=HTTP_200_OK
+        )
     else:
         return Response(
             {"error": "Password reset link has expired"},

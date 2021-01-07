@@ -90,7 +90,9 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": (
-            [] if "REDIRECT_URL" in os.environ else [os.environ["FRONTEND_BUILD_DIR"]]
+            []
+            if "REDIRECT_URL" in os.environ
+            else [os.environ["FRONTEND_BUILD_DIR"]]
         ),
         "APP_DIRS": True,
         "OPTIONS": {

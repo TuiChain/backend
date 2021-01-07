@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------- #
+
+name: build  # the name is mostly to look good on the status badge
+on: [push, pull_request]
+
+jobs:
+
+  check-formatting:
+
+    name: Check formatting
+
+    runs-on: ubuntu-20.04
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install black
+        run: pip3 install --upgrade black
+
+      - name: Check formatting
+        run: black --check .
+
+  run-tests:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - [3, 8]
+          - [3, 9]
+
+    name: Run tests with Python ${{ join(matrix.python, '.') }}
+
+    runs-on: ubuntu-20.04
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ join(matrix.python, '.') }}
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Install blockchain component
+        run: pip3 install https://github.com/TuiChain/blockchain/archive/main.zip
+
+      - name: Run tests
+        env:
+          SECRET_KEY: test
+          DATABASE_ENGINE: django.db.backends.sqlite3
+          DATABASE_NAME: ':memory:'
+          DATABASE_USER:
+          DATABASE_PASSWORD:
+          DATABASE_HOST:
+          DATABASE_PORT:
+          FRONTEND_BUILD_DIR: '.'
+        run: python3 manage.py test --debug-mode --no-input
+
+# ---------------------------------------------------------------------------- #
