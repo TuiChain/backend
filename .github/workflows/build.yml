@@ -53,6 +53,9 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
+      - name: Install blockchain component
+        run: pip3 install https://github.com/TuiChain/blockchain/archive/main.zip
+
       - name: Run tests
         env:
           SECRET_KEY: test
