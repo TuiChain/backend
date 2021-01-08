@@ -1,19 +1,23 @@
-import tuichain_ethereum as tui
-import web3
-import os
+from django.conf import settings
+from tuichain_ethereum import Controller
 
 
 def init():
     """
     Get the Blockchain controller
     """
-    try:
-        return tui.Controller(
-            provider=web3.HTTPProvider(os.environ["ETHEREUM_PROVIDER"]),
-            master_account_private_key=tui.PrivateKey(
-                bytes.fromhex(os.environ["MASTER_ACCOUNT_PRIVATE_KEY"])
-            ),
-            contract_address=tui.Address(os.environ["CONTROLLER_ADDRESS"]),
+
+    if (
+        settings.ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY is not None
+        and settings.ETHEREUM_CONTROLLER_ADDRESS is not None
+    ):
+
+        return Controller(
+            provider=settings.ETHEREUM_PROVIDER,
+            master_account_private_key=settings.ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY,
+            contract_address=settings.ETHEREUM_CONTROLLER_ADDRESS,
         )
-    except:
+
+    else:
+
         return None
