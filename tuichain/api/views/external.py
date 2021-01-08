@@ -21,7 +21,21 @@ from tuichain.api.services.id_verification import create_verification_intent
 def request_id_verification(request):
     """
     Request ID Verification to Stripe
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    201
+        Verification intent created successfully.
+
+    400
+        Verification intent not possible or return and refresh links missing.
+
+
     """
+
     user = request.user
 
     return_url = request.data.get("return_url")

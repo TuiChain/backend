@@ -23,6 +23,28 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 def login(request):
     """
     Fetch the authentication token for the user with the given username and password
+
+    Parameters
+    ----------
+    username : string
+
+        User's username.
+
+    password : string
+
+        User's password.
+
+    Returns
+    -------
+    200
+        User Logged in with success.
+
+    400
+        Username and password required.
+
+    404
+        Invalid credentials or user not found.
+
     """
     username = request.data.get("username")
     password = request.data.get("password")
@@ -53,7 +75,43 @@ def login(request):
 def signup(request):
     """
     Create a new user
+
+    Parameters
+    ----------
+    username : string
+
+        User's username.
+
+    email : string
+
+        User's email.
+
+    password : string
+
+        User's password.
+
+    first_name : string
+
+        User's first name
+
+    last_name : string
+
+        User's last name.
+
+    Returns
+    -------
+    201
+        User created with success.
+
+    400
+        Username, email, password, first name and last name are required
+
+    403
+        Username or email are already taken.
+
+
     """
+
     username = request.data.get("username")
     email = request.data.get("email")
     password = request.data.get("password")
@@ -115,7 +173,23 @@ def signup(request):
 def verify_email(request):
     """
     Verify if email can be used for account creation (signup)
+
+    Parameters
+    ----------
+    email : string
+
+        User's email.
+
+    Returns
+    -------
+    200
+        Email is valid for signup.
+
+    400
+        Email is missing or is already taken.
+
     """
+
     email = request.data.get("email")
 
     if email is None:
@@ -142,7 +216,23 @@ def verify_email(request):
 def verify_username(request):
     """
     Verify if username can be used for account creation (signup)
+
+    Parameters
+    ----------
+    username : string
+
+        User's username.
+
+    Returns
+    -------
+    200
+        Username is valid for signup.
+
+    400
+        Username is missing or is already taken.
+
     """
+
     username = request.data.get("username")
 
     if username is None:
@@ -169,7 +259,26 @@ def verify_username(request):
 def email_reset_password(request):
     """
     Send email to user's email to change his password
+
+    Parameters
+    ----------
+    email : string
+
+        User's email.
+
+    Returns
+    -------
+    200
+        Email sent to redefine password.
+
+    400
+        Email is required.
+
+    404
+        Email not registered.
+
     """
+
     email = request.data.get("email")
 
     if email is None:
@@ -211,7 +320,27 @@ def email_reset_password(request):
 def reset_password(request, id, token):
     """
     Resets User's password
+
+    Parameters
+    ----------
+    password : string
+
+        User's new password.
+
+    Returns
+    -------
+    200
+        Password has been reset.
+
+    400
+        Password is missing.
+
+    408
+        Password reset link has expired.
+
+
     """
+
     pwd = request.data.get("password")
     if pwd is None:
         return Response(

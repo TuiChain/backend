@@ -17,8 +17,30 @@ import decimal
 def create_loan_request(request):
     """
     Create new LoanRequest
+
+    Parameters
+    ----------
+    school : string
+
+        User's desired school.
+
+    course : string
+
+        User's desired course.
+
+    amount : float
+
+        Amount of money pretended by the user.
+
+    Returns
+    -------
+    201
+        Loan request created successfully.
+
+    400
+        Required fields are missing or user already has an undergoing loan request.
+
     """
-    user = request.user
 
     school = request.data.get("school")
     course = request.data.get("course")
@@ -76,6 +98,24 @@ def create_loan_request(request):
 def validate_loan_request(request, id):
     """
     Validate a Loan Request
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan request's identifier.
+
+    Returns
+    -------
+    201
+        Loan request validated successfully.
+
+    403
+        Loan request has already been validated.
+
+    404
+        Unexistent loan request.
+
     """
 
     loanrequest = LoanRequest.objects.filter(id=id).first()
@@ -104,6 +144,24 @@ def validate_loan_request(request, id):
 def close_loan_request(request, id):
     """
     Close a Loan Request
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan request's identifier.
+
+    Returns
+    -------
+    201
+        Loan request closed successfully.
+
+    403
+        Loan request already closed.
+
+    404
+        Loan request not found.
+
     """
 
     loanrequest = LoanRequest.objects.filter(id=id).first()
@@ -132,6 +190,21 @@ def close_loan_request(request, id):
 def get_loan_request(request, id):
     """
     Get Loan Request with given ID
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan Request's identifier.
+
+    Returns
+    -------
+    200
+        Loan request found with success.
+
+    404
+        Loan request not found.
+
     """
 
     loanrequest = LoanRequest.objects.filter(id=id).first()
@@ -158,6 +231,15 @@ def get_loan_request(request, id):
 def get_personal_loan_requests(request):
     """
     Get Loan Requests made by the authenticated user
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        loan requests fetched with success.
+
     """
 
     user = request.user
@@ -181,6 +263,15 @@ def get_personal_loan_requests(request):
 def get_all_loan_requests(request):
     """
     Get all active loan requests
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        Loan requests fetched with success.
+
     """
 
     q = LoanRequest.objects.exclude(status=3)
@@ -204,7 +295,60 @@ def get_all_loan_requests(request):
 def get_non_validated_loan_requests(request):
     """
     Get all active and non_validated loan requests
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        loan requests fetched with success.
+
     """
+
+    loanrequest_list = LoanRequest.objects.filter(status=0)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_specific_state_loan_requests(request, status):
+    """
+    Get all loan requests at a given state
+    """
+    user = request.user
+
+    loanrequest_list = LoanRequest.objects.filter(student=user, status=status)
+
+    result = [obj.to_dict() for obj in loanrequest_list]
+
+    return Response(
+        {
+            "message": "Loan Requests fetched with success",
+            "loanrequests": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_specific_state_loan_requests(request, status):
+    """
+    Get all loan requests at a given state
+    """
+    user = request.user
 
     loanrequest_list = LoanRequest.objects.filter(status=0)
 
@@ -269,6 +413,21 @@ def get_specific_state_loan_requests(request, status):
 def get_loan_request_investments(request, id):
     """
     Get investments for a given loan request
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan request's identifier.
+
+    Returns
+    -------
+    200
+        Investments from given loan requests fetched successfully.
+
+    404
+        Loan request not found.
+
     """
 
     loanrequest = LoanRequest.objects.filter(id=id).first()
