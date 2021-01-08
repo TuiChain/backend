@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
@@ -162,7 +162,7 @@ def signup(request):
         subject="Welcome to Tuichain!",
         message="Your Tuichain's account is now created! \n\n Thank you! \n\n Please, complete your Profile with your personal info so you can enjoy the app as a whole.",
         to_email=email,
-        html_file="email.html",
+        # html_file="email.html",
     )
 
     token = Token.objects.get(user=user)
@@ -368,3 +368,30 @@ def reset_password(request, id, token):
             {"error": "Password reset link has expired"},
             status=HTTP_408_REQUEST_TIMEOUT,
         )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def is_admin_user(request):
+    """
+    Checks if the user is an admin (superuser) through the authentication token
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        Verification was done successfully
+
+    """
+
+    user = request.user
+
+    return Response(
+        {
+            "message": "Verification was done successfully",
+            "is_admin": user.is_superuser,
+        },
+        status=HTTP_200_OK,
+    )
