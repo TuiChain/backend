@@ -16,15 +16,26 @@ class Profile(models.Model):
     zip_code = models.CharField(max_length=20, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
+    short_bio = models.CharField(max_length=500, null=True, blank=True)
+    profile_image = models.FileField(
+        upload_to="media/photos", null=True, blank=True
+    )
     id_number = models.IntegerField(null=True, blank=True)
 
     def to_dict(self, private=False):
+        img_url = ""
+
+        # if self.profile_image is not None:
+        #     img_url = self.profile_image.url
+
         result = {
             "id": self.user.id,
             "username": self.user.username,
             "created_at": self.user.date_joined,
             "is_active": self.user.is_active,
             "country": self.country,
+            "short_bio": self.short_bio,
+            "profile_image": img_url,
         }
 
         if private:
@@ -53,12 +64,14 @@ class LoanRequest(models.Model):
     request_date = models.DateTimeField(auto_now_add=True)
     school = models.CharField(max_length=100)
     course = models.CharField(max_length=100)
+    destination = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     current_amount = models.DecimalField(
         max_digits=8, decimal_places=2, default="0.00"
     )
-    validated = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
+    description = models.CharField(max_length=5000)
+    # 0 - pending; 1 - funding; 2 - active; 3 - finished; 4 - expired; 5 - cancelled;
+    status = models.IntegerField(default=0)
 
     def to_dict(self):
         return {
@@ -67,10 +80,11 @@ class LoanRequest(models.Model):
             "request_date": self.request_date,
             "school": self.school,
             "course": self.course,
+            "destination": self.destination,
             "amount": self.amount,
             "current_amount": self.current_amount,
-            "validated": self.validated,
-            "active": self.active,
+            "description": self.description,
+            "status": self.status,
         }
 
 

@@ -17,7 +17,34 @@ import decimal
 def create_investment(request):
     """
     Create new Investment
+
+    Parameters
+    ----------
+    loanrequest_id : integer
+
+        Loan request identifier.
+
+    amount : float
+
+        Amount to invest.
+
+    Returns
+    -------
+    201
+        Investment created with success.
+
+    400
+        Loan request or amount missing or amount value is not correct.
+
+    403
+        Loan request is not active, validated or is its own loan request.
+
+    404
+        Loan request doesn't exist.
+
+
     """
+
     user = request.user
 
     loanrequest_id = request.data.get("request")
@@ -92,6 +119,15 @@ def create_investment(request):
 def get_personal_investments(request):
     """
     Get Investments made by the authenticated user
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        Investments fetched with success.
+
     """
 
     user = request.user
@@ -115,6 +151,21 @@ def get_personal_investments(request):
 def get_investment(request, id):
     """
     Get Investment with the given ID
+
+    Parameters
+    ----------
+    id : integer
+
+        Investment's identifier.
+
+    Returns
+    -------
+    200
+        Investment found with success.
+
+    404
+        Investment not found.
+
     """
 
     investment = Investment.objects.filter(id=id).first()

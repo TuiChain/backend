@@ -18,6 +18,21 @@ from django.core import serializers
 def get_user(request, id):
     """
     Get User with given ID
+
+    Parameters
+    ----------
+    id : integer
+
+        User's identifier.
+
+    Returns
+    -------
+    200
+        User found with success.
+
+    404
+        user not found.
+
     """
 
     user = request.user
@@ -43,7 +58,17 @@ def get_user(request, id):
 def get_me(request):
     """
     Get personal profile
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        User fetched successfully.
+
     """
+
     user = request.user
 
     return Response(
@@ -60,6 +85,15 @@ def get_me(request):
 def get_all(request):
     """
     Get all users (public profile)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        Users fetched successfully.
+
     """
 
     user_list = User.objects.all()
@@ -81,6 +115,45 @@ def get_all(request):
 def update_profile(request):
     """
     Update profile of authenticated user
+
+    Parameters
+    ----------
+    full_name : string
+
+        User's full_name.
+
+    birth_date : date
+
+        User's birth date.
+
+    address : string
+
+        User's home address.
+
+    zip_code : string
+
+        User's home zip code.
+
+    country : string
+
+        User's country.
+
+    city : string
+
+        User's city.
+
+    id_number : integer
+
+        User's idnetifier.
+
+    Returns
+    -------
+    200
+        User's profile updated with success.
+
+    400
+        Could not update profile
+
     """
 
     user = request.user
@@ -92,6 +165,8 @@ def update_profile(request):
     country = request.data.get("country")
     city = request.data.get("city")
     id_number = request.data.get("id_number")
+    short_bio = request.data.get("short_bio")
+    profile_image = request.data.get("profile_image")
 
     profile = user.profile
 
@@ -110,6 +185,10 @@ def update_profile(request):
             profile.city = city
         if id_number is not None:
             profile.id_number = id_number
+        if short_bio is not None:
+            profile.short_bio = short_bio
+        if profile_image is not None:
+            profile.profile_image = profile_image
 
         profile.save()
 
