@@ -23,6 +23,11 @@ class Profile(models.Model):
     id_number = models.IntegerField(null=True, blank=True)
 
     def to_dict(self, private=False):
+        img_url = ""
+
+        # if self.profile_image is not None:
+        #     img_url = self.profile_image.url
+
         result = {
             "id": self.user.id,
             "username": self.user.username,
@@ -30,7 +35,7 @@ class Profile(models.Model):
             "is_active": self.user.is_active,
             "country": self.country,
             "short_bio": self.short_bio,
-            "profile_image": self.profile_image,
+            "profile_image": img_url,
         }
 
         if private:
