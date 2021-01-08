@@ -29,7 +29,7 @@ def get_blockchain_info(request):
     return Response(
         {
             "chain_id": controller.chain_id,
-            # "dai_contract_address": controller.dai_contract_address
+            "dai_contract_address": controller.dai_contract_address,
         },
         status=HTTP_200_OK,
     )
