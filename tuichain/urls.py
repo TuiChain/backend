@@ -91,6 +91,10 @@ urlpatterns = [
         "api/loanrequests/get/<int:id>/investments/",
         loanrequests.get_loan_request_investments,
     ),
+    path(
+        "api/loanrequests/cancel_pending/<int:id>/",
+        loanrequests.cancel_loan_request,
+    ),
     # DOCUMENTATION ROUTES
     url(
         r"^swagger(?P<format>\.json|\.yaml)$",
