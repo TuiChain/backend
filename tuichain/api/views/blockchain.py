@@ -20,7 +20,7 @@ def get_blockchain_info(request):
     """
     Get Blockchain information
     """
-    if not controller:
+    if controller is None:
         return Response(
             {"error": "Something went wrong with the Tuichain's connection..."},
             status=HTTP_404_NOT_FOUND,
