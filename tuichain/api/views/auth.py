@@ -162,7 +162,7 @@ def signup(request):
         subject="Welcome to Tuichain!",
         message="Your Tuichain's account is now created! \n\n Thank you! \n\n Please, complete your Profile with your personal info so you can enjoy the app as a whole.",
         to_email=email,
-        # html_file="email.html",
+        html_file="email.html",
     )
 
     token = Token.objects.get(user=user)
