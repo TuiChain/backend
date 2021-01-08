@@ -56,7 +56,9 @@ def create_loan_request(request):
         or description is None
     ):
         return Response(
-            {"error": "Required fields: school, course and amount"},
+            {
+                "error": "Required fields: school, course, amount, destination and description"
+            },
             status=HTTP_400_BAD_REQUEST,
         )
 
@@ -90,6 +92,43 @@ def create_loan_request(request):
     return Response(
         {"message": "Loan Request successfully created"},
         status=HTTP_201_CREATED,
+    )
+
+
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def cancel_loan_request(request, id):
+    """
+    Cancel a pending Loan Request
+    """
+
+    user = request.user
+
+    loanrequest = LoanRequest.objects.filter(id=id).first()
+
+    if loanrequest is None:
+        return Response(
+            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+        )
+
+    if loanrequest.student != user:
+        return Response(
+            {"error": "Loan Request does not belong to logged user"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    if loanrequest.status > 0:
+        return Response(
+            {"error": "That Loan Request cannot be cancelled"},
+            status=HTTP_400_BAD_REQUEST,
+        )
+
+    # set status as cancelled
+    loanrequest.status = 5
+    loanrequest.save()
+
+    return Response(
+        {"message": "Loan Request has been canceled"}, status=HTTP_201_CREATED
     )
 
 

@@ -5,7 +5,14 @@ from django.shortcuts import render
 from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework import routers
-from tuichain.api.views import auth, users, investments, loanrequests, external
+from tuichain.api.views import (
+    auth,
+    users,
+    investments,
+    loanrequests,
+    external,
+    blockchain,
+)
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -49,6 +56,8 @@ urlpatterns = [
     path("api/users/get/", users.get_me),
     path("api/users/get_all/", users.get_all),
     path("api/users/update_profile/", users.update_profile),
+    # BLOCKCHAIN ROUTES
+    path("api/tuichain/get_info/", blockchain.get_blockchain_info),
     # EXTERNAL ROUTES
     path(
         "api/external/create_verification_intent/",
@@ -82,6 +91,10 @@ urlpatterns = [
     path(
         "api/loanrequests/get/<int:id>/investments/",
         loanrequests.get_loan_request_investments,
+    ),
+    path(
+        "api/loanrequests/cancel_pending/<int:id>/",
+        loanrequests.cancel_loan_request,
     ),
     # DOCUMENTATION ROUTES
     url(r"^swagger/", include_docs_urls(title="Tuichain API")),
