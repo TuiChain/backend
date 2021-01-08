@@ -14,4 +14,7 @@ Create a virtualenv and install the dependencies in `requirements.txt`, *e.g.*:
 - `source venv/bin/activate`
 - `pip install -r requirements.txt`
 
+A full test configuration is included in file `.env_test`.
+Copy it to `.env` to use it.
+
 <!-- ----------------------------------------------------------------------- -->
