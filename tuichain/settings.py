@@ -1,3 +1,5 @@
+# ---------------------------------------------------------------------------- #
+
 """
 Django settings for tuichain project.
 
@@ -10,52 +12,44 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+# ---------------------------------------------------------------------------- #
+
+from dotenv import load_dotenv
+from os import environ
 from pathlib import Path
-import django_heroku
-import os
-import dotenv
+from tuichain_ethereum import Address, PrivateKey
+from web3 import (
+    EthereumTesterProvider,
+    HTTPProvider,
+    IPCProvider,
+    WebsocketProvider,
+)
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# ---------------------------------------------------------------------------- #
 
-dotenv_file = os.path.join(BASE_DIR, ".env")
-if os.path.isfile(dotenv_file):
-    dotenv.load_dotenv(dotenv_file)
+dotenv_path = Path(__file__).resolve().parent.parent / ".env"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
+if dotenv_path.exists():
+    load_dotenv(dotenv_path)
+
+# ---------------------------------------------------------------------------- #
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["SECRET_KEY"]
-
-# EMAIL
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+SECRET_KEY = environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = {"True": True, "False": False}[environ["DEBUG"]]
 
-ALLOWED_HOSTS = [
-    "0.0.0.0",
-    "localhost",
-    "127.0.0.1",
-    "tuichain-backend.herokuapp.com",
-]
+ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split()
 
-
+# ---------------------------------------------------------------------------- #
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
     # Django Rest Framework
     "rest_framework",
     "rest_framework.authtoken",
@@ -63,15 +57,14 @@ INSTALLED_APPS = [
     "tuichain.api",
     # Documentation
     "drf_yasg",
-    # Heroku Static Files
-    "whitenoise.runserver_nostatic",
     # CORS
     "corsheaders",
 ]
 
+if environ["FRONTEND_DIR"]:
+    INSTALLED_APPS.append("django.contrib.staticfiles")
+
 MIDDLEWARE = [
-    # Heroku Static Files
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     # CORS
     "corsheaders.middleware.CorsMiddleware",
     # Django
@@ -86,48 +79,83 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "tuichain.urls"
 
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": (
-            []
-            if "REDIRECT_URL" in os.environ
-            else [os.environ["FRONTEND_BUILD_DIR"]]
-        ),
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
-
 WSGI_APPLICATION = "tuichain.wsgi.application"
 
+# ---------------------------------------------------------------------------- #
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+if environ["FRONTEND_DIR"]:
+
+    FRONTEND_DIR = Path(environ["FRONTEND_DIR"])
+
+    STATIC_URL = "/static/"
+    STATICFILES_DIRS = [FRONTEND_DIR / "static"]
+    STATICFILES_STORAGE = None
+    STATICFILES_FINDERS = [
+        "django.contrib.staticfiles.finders.FileSystemFinder"
+    ]
+
+else:
+
+    FRONTEND_DIR = None
+
+# ---------------------------------------------------------------------------- #
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ["DATABASE_ENGINE"],
-        "NAME": os.environ["DATABASE_NAME"],
-        "USER": os.environ["DATABASE_USER"],
-        "PASSWORD": os.environ["DATABASE_PASSWORD"],
-        "HOST": os.environ["DATABASE_HOST"],
-        "PORT": os.environ["DATABASE_PORT"],
+        "ENGINE": environ["DATABASE_ENGINE"],
+        "NAME": environ["DATABASE_NAME"],
+        "USER": environ["DATABASE_USER"],
+        "PASSWORD": environ["DATABASE_PASSWORD"],
+        "HOST": environ["DATABASE_HOST"],
+        "PORT": environ["DATABASE_PORT"],
     }
 }
 
+# ---------------------------------------------------------------------------- #
+# Email
+
+EMAIL_USE_TLS = {"True": True, "False": False}[environ["EMAIL_USE_TLS"]]
+EMAIL_PORT = int(environ["EMAIL_PORT"])
+EMAIL_HOST = environ["EMAIL_HOST"]
+EMAIL_HOST_USER = environ["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = environ["EMAIL_HOST_PASSWORD"]
+EMAIL_BACKEND = environ["EMAIL_BACKEND"]
+
+# ---------------------------------------------------------------------------- #
+# Ethereum
+
+eth_provider = environ["ETHEREUM_PROVIDER"]
+eth_master_acc = environ["ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY"]
+eth_controller_address = environ["ETHEREUM_CONTROLLER_ADDRESS"]
+
+if eth_provider == "test":
+    ETHEREUM_PROVIDER = EthereumTesterProvider()
+elif eth_provider.startswith("http://") or eth_provider.startswith("https://"):
+    ETHEREUM_PROVIDER = HTTPProvider(eth_provider)
+elif eth_provider.startswith("ws://"):
+    ETHEREUM_PROVIDER = WebsocketProvider(eth_provider)
+else:
+    ETHEREUM_PROVIDER = IPCProvider(eth_provider)
+
+ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY = (
+    PrivateKey(bytes.fromhex(eth_master_acc)) if eth_master_acc else None
+)
+
+ETHEREUM_CONTROLLER_ADDRESS = (
+    Address(eth_controller_address) if eth_controller_address else None
+)
+
+# ---------------------------------------------------------------------------- #
 # CORS
+
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-
+# ---------------------------------------------------------------------------- #
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -146,31 +174,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+# ---------------------------------------------------------------------------- #
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATIC_URL = "/static/"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATICFILES_DIRS = (
-    os.path.join(os.environ.get("FRONTEND_BUILD_DIR", BASE_DIR), "static"),
-)
-
+# ---------------------------------------------------------------------------- #
+# REST
 
 REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -196,4 +211,4 @@ SWAGGER_SETTINGS = {
     },
 }
 
-django_heroku.settings(locals())
+# ---------------------------------------------------------------------------- #
