@@ -109,18 +109,16 @@ urlpatterns = [
 if settings.FRONTEND_DIR is not None:
 
     urlpatterns += [
-        path(
-            "",
+        re_path(
+            r"^(?P<path>[^/]+\.[^/]+)$",
+            serve,
+            kwargs={"document_root": settings.FRONTEND_DIR},
+        ),
+        re_path(
+            r"",
             serve,
             kwargs={
                 "path": "index.html",
-                "document_root": settings.FRONTEND_DIR,
-            },
-        ),
-        re_path(
-            r"^(?P<path>[^/]+)$",
-            serve,
-            kwargs={
                 "document_root": settings.FRONTEND_DIR,
             },
         ),
