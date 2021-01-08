@@ -27,6 +27,38 @@ jobs:
       - name: Check formatting
         run: black --check .
 
+  check-migrations:
+
+    name: Check migrations
+
+    runs-on: ubuntu-20.04
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install Rust nightly  # required by some Python dependencies
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          default: true
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Create .env file
+        run: cp .env_test .env
+
+      - name: Check if makemigrations needs to be run
+        run: python3 manage.py makemigrations --check --no-input
+
   run-tests:
 
     strategy:
@@ -50,22 +82,20 @@ jobs:
         with:
           python-version: ${{ join(matrix.python, '.') }}
 
+      - name: Install Rust nightly  # required by some Python dependencies
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          default: true
+
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Install blockchain component
-        run: pip3 install https://github.com/TuiChain/blockchain/archive/main.zip
+      - name: Create .env file
+        run: cp .env_test .env
 
       - name: Run tests
-        env:
-          SECRET_KEY: test
-          DATABASE_ENGINE: django.db.backends.sqlite3
-          DATABASE_NAME: ':memory:'
-          DATABASE_USER:
-          DATABASE_PASSWORD:
-          DATABASE_HOST:
-          DATABASE_PORT:
-          FRONTEND_BUILD_DIR: '.'
         run: python3 manage.py test --debug-mode --no-input
 
 # ---------------------------------------------------------------------------- #
