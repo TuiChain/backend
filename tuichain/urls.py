@@ -116,7 +116,7 @@ if settings.FRONTEND_DIR is not None:
             kwargs={"document_root": settings.FRONTEND_DIR},
         ),
         re_path(
-            r"",
+            r"^(?!api/|swagger/)",
             serve,
             kwargs={
                 "path": "index.html",
