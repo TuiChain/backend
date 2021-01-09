@@ -88,6 +88,10 @@ urlpatterns = [
         "api/loanrequests/cancel_pending/<int:id>/",
         loanrequests.cancel_loan_request,
     ),
+    path(
+        "api/loanrequests/get/<int:id>/loaners/",
+        loanrequests.get_loan_request_loaners,
+    ),
     # DOCUMENTATION ROUTES
     re_path(r"^swagger/", include_docs_urls(title="Tuichain API")),
     #    re_path(

@@ -499,3 +499,42 @@ def get_loan_request_investments(request, id):
         },
         status=HTTP_200_OK,
     )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated))
+def get_loan_request_investors(request, id):
+    """
+    Get loaners for a given loan request
+    Parameters
+    ----------
+    id : integer
+        Loan request's identifier.
+    Returns
+    -------
+    200
+        Loaners from given loan requests fetched successfully.
+    404
+        Loan request not found.
+    """
+
+    loanrequest = LoanRequest.objects.filter(id=id).first()
+
+    if loanrequest is None:
+        return Response(
+            {"error": "Loan Request with given ID not found"},
+            status=HTTP_404_NOT_FOUND,
+        )
+
+    investments = Investment.objects.filter(request=loanrequest)
+
+    result = [obj.investor.to_dict() for obj in investments]
+
+    return Response(
+        {
+            "message": "Loaners fetched with success for the given Loan Request",
+            "count": len(result),
+            "loaners": result,
+        },
+        status=HTTP_200_OK,
+    )
