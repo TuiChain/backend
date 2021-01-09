@@ -11,7 +11,7 @@ from rest_framework.status import (
     HTTP_201_CREATED,
 )
 from rest_framework.response import Response
-from tuichain.api import controller
+from tuichain.api.services.blockchain import controller
 
 
 @api_view(["GET"])
@@ -20,16 +20,11 @@ def get_blockchain_info(request):
     """
     Get Blockchain information
     """
-    if controller is None:
-        return Response(
-            {"error": "Something went wrong with the Tuichain's connection..."},
-            status=HTTP_404_NOT_FOUND,
-        )
 
     return Response(
         {
             "chain_id": controller.chain_id,
-            "dai_contract_address": controller.dai_contract_address,
+            "dai_contract_address": str(controller.dai_contract_address),
         },
         status=HTTP_200_OK,
     )
