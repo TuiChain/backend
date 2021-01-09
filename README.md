@@ -17,4 +17,8 @@ Create a virtualenv and install the dependencies in `requirements-dev.txt`, *e.g
 A full test configuration is included in file `.env_test`.
 Copy it to `.env` to use it.
 
+## Formatting code
+
+Run `black .` in the repo's root.
+
 <!-- ----------------------------------------------------------------------- -->
