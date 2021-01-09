@@ -32,6 +32,14 @@ def create_loan_request(request):
 
         Amount of money pretended by the user.
 
+    destination : string
+
+        Location of the specified university.
+
+    description : string
+
+        Brief description of the loan request's reason.
+
     Returns
     -------
     201
@@ -41,6 +49,8 @@ def create_loan_request(request):
         Required fields are missing or user already has an undergoing loan request.
 
     """
+
+    user = request.user
 
     school = request.data.get("school")
     course = request.data.get("course")
