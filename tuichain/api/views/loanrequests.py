@@ -10,6 +10,7 @@ from tuichain.api.models import LoanRequest, Investment
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 import decimal
+from tuichain.api import controller
 
 
 @api_view(["POST"])
@@ -500,11 +501,27 @@ def get_loan_request_investments(request, id):
         status=HTTP_200_OK,
     )
 
+
 @api_view(["GET"])
 @permission_classes((IsAuthenticated))
-def get_loan_request_investors(request,id):
+def get_loan_request_investors(request, id):
     """
     Get loaners for a given loan request
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan request's identifier.
+
+    Returns
+    -------
+    200
+        Loaners from given loan requests fetched successfully.
+
+    404
+        Loan request not found.
+
     """
 
     loanrequest = LoanRequest.objects.filter(id=id).first()
