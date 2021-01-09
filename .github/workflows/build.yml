@@ -51,7 +51,7 @@ jobs:
           default: true
 
       - name: Install dependencies
-        run: pip3 install -r requirements.txt
+        run: pip3 install -r requirements-dev.txt
 
       - name: Create .env file
         run: cp .env_test .env
@@ -90,7 +90,7 @@ jobs:
           default: true
 
       - name: Install dependencies
-        run: pip3 install -r requirements.txt
+        run: pip3 install -r requirements-dev.txt
 
       - name: Create .env file
         run: cp .env_test .env

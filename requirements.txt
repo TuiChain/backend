@@ -22,7 +22,6 @@ lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
 packaging==20.7
-psycopg2==2.8.6
 Pygments==2.7.3
 pylint==2.6.0
 pyparsing==2.4.7
@@ -39,7 +38,6 @@ six==1.15.0
 sqlparse==0.4.1
 stripe==2.55.1
 toml==0.10.1
-tuichain-ethereum[test] @ https://github.com/TuiChain/blockchain/archive/main.zip
 typed-ast==1.4.1
 uritemplate==3.0.1
 urllib3==1.26.2

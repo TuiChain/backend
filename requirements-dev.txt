@@ -1,0 +1,3 @@
+-r requirements.txt
+black
+tuichain-ethereum[web3-test-provider] @ https://github.com/TuiChain/blockchain/archive/main.zip
