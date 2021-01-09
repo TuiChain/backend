@@ -503,7 +503,7 @@ def get_loan_request_investments(request, id):
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated))
-def get_loan_request_investors(request, id):
+def get_loan_request_loaners(request, id):
     """
     Get loaners for a given loan request
     Parameters
