@@ -39,9 +39,7 @@ def request_id_verification(request):
     user = request.user
 
     try:
-        verification_intent = create_verification_intent(
-            user.profile.id_number
-        )
+        verification_intent = create_verification_intent(user.profile.id_number)
     except Exception as e:
         return Response(
             {
