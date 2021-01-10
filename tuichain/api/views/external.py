@@ -16,7 +16,7 @@ from tuichain.api.models import Profile, IDVerifications
 from tuichain.api.services.id_verification import create_verification_intent
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def request_id_verification(request):
     """
@@ -38,18 +38,9 @@ def request_id_verification(request):
 
     user = request.user
 
-    return_url = request.data.get("return_url")
-    refresh_url = request.data.get("refresh_url")
-
-    if return_url is None or refresh_url is None:
-        return Response(
-            {"error": "Required fields: return_url and refresh_url"},
-            status=HTTP_400_BAD_REQUEST,
-        )
-
     try:
         verification_intent = create_verification_intent(
-            return_url, refresh_url, user.profile.id_number
+            user.profile.id_number
         )
     except Exception as e:
         return Response(
