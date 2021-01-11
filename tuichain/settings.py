@@ -56,9 +56,6 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
-if environ["FRONTEND_DIR"]:
-    INSTALLED_APPS.append("django.contrib.staticfiles")
-
 MIDDLEWARE = [
     # CORS
     "corsheaders.middleware.CorsMiddleware",
@@ -91,25 +88,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# ---------------------------------------------------------------------------- #
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-if environ["FRONTEND_DIR"]:
-
-    FRONTEND_DIR = Path(environ["FRONTEND_DIR"])
-
-    STATIC_URL = "/static/"
-    STATICFILES_DIRS = [FRONTEND_DIR / "static"]
-    STATICFILES_STORAGE = None
-    STATICFILES_FINDERS = [
-        "django.contrib.staticfiles.finders.FileSystemFinder"
-    ]
-
-else:
-
-    FRONTEND_DIR = None
 
 # ---------------------------------------------------------------------------- #
 # Database
