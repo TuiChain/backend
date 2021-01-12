@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib import admin
-from django.views.static import serve
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
@@ -106,21 +105,3 @@ urlpatterns = [
     #        name="schema-redoc",
     #    ),
 ]
-
-if settings.FRONTEND_DIR is not None:
-
-    urlpatterns += [
-        re_path(
-            r"^(?P<path>[^/]+\.[^/]+)$",
-            serve,
-            kwargs={"document_root": settings.FRONTEND_DIR},
-        ),
-        re_path(
-            r"^(?!api/|swagger/)",
-            serve,
-            kwargs={
-                "path": "index.html",
-                "document_root": settings.FRONTEND_DIR,
-            },
-        ),
-    ]
