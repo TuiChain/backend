@@ -9,7 +9,7 @@ from tuichain.api.views import (
     auth,
     users,
     investments,
-    loanrequests,
+    loans,
     external,
     blockchain,
 )
@@ -60,33 +60,33 @@ urlpatterns = [
     path("api/investments/get_personal/", investments.get_personal_investments),
     path("api/investments/get/<int:id>/", investments.get_investment),
     # LOAN REQUESTS ROUTES
-    path("api/loanrequests/new/", loanrequests.create_loan_request),
+    path("api/loans/new/", loans.create_loan_request),
     path(
-        "api/loanrequests/validate/<int:id>/",
-        loanrequests.validate_loan_request,
+        "api/loans/validate/<int:id>/",
+        loans.validate_loan_request,
     ),
-    path("api/loanrequests/close/<int:id>/", loanrequests.close_loan_request),
+    path("api/loans/reject/<int:id>/", loans.reject_loan_request),
     path(
-        "api/loanrequests/get_personal/",
-        loanrequests.get_personal_loan_requests,
+        "api/loans/get_personal/",
+        loans.get_personal_loan_requests,
     ),
-    path("api/loanrequests/get_all/", loanrequests.get_all_loan_requests),
+    path("api/loans/get_all/", loans.get_all_loan_requests),
     path(
-        "api/loanrequests/get_non_validated/",
-        loanrequests.get_non_validated_loan_requests,
-    ),
-    path(
-        "api/loanrequests/get_state/<int:status>/",
-        loanrequests.get_specific_state_loan_requests,
-    ),
-    path("api/loanrequests/get/<int:id>/", loanrequests.get_loan_request),
-    path(
-        "api/loanrequests/get/<int:id>/investments/",
-        loanrequests.get_loan_request_investments,
+        "api/loans/get_non_validated/",
+        loans.get_non_validated_loan_requests,
     ),
     path(
-        "api/loanrequests/cancel_pending/<int:id>/",
-        loanrequests.cancel_loan_request,
+        "api/loans/get_state/<int:status>/",
+        loans.get_specific_state_loan_requests,
+    ),
+    path("api/loans/get/<int:id>/", loans.get_loan_request),
+    path(
+        "api/loans/get/<int:id>/investments/",
+        loans.get_loan_request_investments,
+    ),
+    path(
+        "api/loans/user_withdraw/<int:id>/",
+        loans.withdraw_loan_request,
     ),
     # DOCUMENTATION ROUTES
     re_path(r"^swagger/", include_docs_urls(title="Tuichain API")),
