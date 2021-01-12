@@ -127,7 +127,7 @@ urlpatterns = [
     ),
     path("api/market/transactions/purchase/", market_transactions.purchase),
     # DOCUMENTATION ROUTES
-    re_path(r"^swagger/", include_docs_urls(title="Tuichain API")),
+    re_path(r"^api/docs/", include_docs_urls(title="Tuichain API")),
     #    re_path(
     #        r"^swagger(?P<format>\.json|\.yaml)$",
     #        schema_view.without_ui(cache_timeout=0),
