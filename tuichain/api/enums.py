@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class LoanState(Enum):
     """Possible States of a Loan."""
 
@@ -15,7 +14,7 @@ class LoanState(Enum):
 
     WITHDRAWN = 3
     """As been withdrawn by the user."""
-
+    
     REJECTED = 4
     """Has not been approved by an Admin."""
 
