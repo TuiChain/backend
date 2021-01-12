@@ -11,6 +11,8 @@ from tuichain.api.views import (
     loanrequests,
     external,
     blockchain,
+    loan_transactions,
+    market_transactions,
 )
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -87,6 +89,43 @@ urlpatterns = [
         "api/loanrequests/cancel_pending/<int:id>/",
         loanrequests.cancel_loan_request,
     ),
+    # USER TRANSACTIONS
+    path(
+        "api/loans/transactions/provide_funds/",
+        loan_transactions.provide_funds,
+    ),
+    path(
+        "api/loans/transactions/withdraw_funds/",
+        loan_transactions.withdraw_funds,
+    ),
+    path(
+        "api/loans/transactions/make_payment/", loan_transactions.make_payment
+    ),
+    path(
+        "api/loans/transactions/redeem_tokens/",
+        loan_transactions.redeem_tokens,
+    ),
+    path(
+        "api/market/transactions/create_sell_position/",
+        market_transactions.create_sell_position,
+    ),
+    path(
+        "api/market/transactions/remove_sell_position/",
+        market_transactions.remove_sell_position,
+    ),
+    path(
+        "api/market/transactions/increase_sell_position_amount/",
+        market_transactions.increase_sell_position_amount,
+    ),
+    path(
+        "api/market/transactions/decrease_sell_position_amount/",
+        market_transactions.decrease_sell_position_amount,
+    ),
+    path(
+        "api/market/transactions/update_sell_position_price/",
+        market_transactions.update_sell_position_price,
+    ),
+    path("api/market/transactions/purchase/", market_transactions.purchase),
     # DOCUMENTATION ROUTES
     re_path(r"^swagger/", include_docs_urls(title="Tuichain API")),
     #    re_path(
