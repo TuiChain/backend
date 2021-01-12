@@ -16,6 +16,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from dotenv import load_dotenv
 from os import environ
+import os
 from pathlib import Path
 from tuichain_ethereum import Address, PrivateKey
 from web3 import HTTPProvider, IPCProvider, WebsocketProvider
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Django Rest Framework
     "rest_framework",
     "rest_framework.authtoken",
@@ -55,6 +57,11 @@ INSTALLED_APPS = [
     # CORS
     "corsheaders",
 ]
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_URL = "/static/"
+
 
 MIDDLEWARE = [
     # CORS
