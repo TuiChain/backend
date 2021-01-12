@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
                 (
                     "id",
@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Investment',
+            name="Investment",
             fields=[
                 ("id", models.AutoField(primary_key=True, serialize=False)),
                 ("amount", models.DecimalField(decimal_places=2, max_digits=8)),
@@ -119,13 +119,34 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='IDVerifications',
+            name="IDVerifications",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('verification_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('person_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('validated', models.BooleanField(default=False)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='id_verification', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "verification_id",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "person_id",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("validated", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="id_verification",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

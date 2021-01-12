@@ -206,7 +206,7 @@ def validate_loan_request(request, id):
             },
             status=HTTP_403_FORBIDDEN,
         )
-    
+
     try:
         time_to_expiration = timedelta(days=int(days_to_expiration))
     except Exception as e:
@@ -216,8 +216,14 @@ def validate_loan_request(request, id):
             },
             status=HTTP_400_BAD_REQUEST,
         )
-    
-    result = controller.loans.create(recipient_address=Address(loan.recipient_address), time_to_expiration=time_to_expiration, funding_fee_atto_dai_per_dai=int(funding_fee_atto_dai_per_dai), payment_fee_atto_dai_per_dai=int(payment_fee_atto_dai_per_dai), requested_value_atto_dai=int(loan.requested_value_atto_dai)).get()
+
+    result = controller.loans.create(
+        recipient_address=Address(loan.recipient_address),
+        time_to_expiration=time_to_expiration,
+        funding_fee_atto_dai_per_dai=int(funding_fee_atto_dai_per_dai),
+        payment_fee_atto_dai_per_dai=int(payment_fee_atto_dai_per_dai),
+        requested_value_atto_dai=int(loan.requested_value_atto_dai),
+    ).get()
 
     try:
         time_to_expiration = timedelta(days=int(days_to_expiration))
