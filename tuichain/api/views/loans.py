@@ -173,8 +173,12 @@ def validate_loan_request(request, id):
 
     """
     days_to_expiration = request.data.get("days_to_expiration")
-    funding_fee_atto_dai_per_dai = request.data.get("funding_fee_atto_dai_per_dai")
-    payment_fee_atto_dai_per_dai = request.data.get("payment_fee_atto_dai_per_dai")
+    funding_fee_atto_dai_per_dai = request.data.get(
+        "funding_fee_atto_dai_per_dai"
+    )
+    payment_fee_atto_dai_per_dai = request.data.get(
+        "payment_fee_atto_dai_per_dai"
+    )
 
     if (
         days_to_expiration is None
@@ -197,10 +201,12 @@ def validate_loan_request(request, id):
 
     if loan.state > 0 and loan.state <= 4:
         return Response(
-            {"error": "The given Loan Request as already been validated or rejected"},
+            {
+                "error": "The given Loan Request as already been validated or rejected"
+            },
             status=HTTP_403_FORBIDDEN,
         )
-    
+
     try:
         time_to_expiration = timedelta(days=int(days_to_expiration))
     except Exception as e:
@@ -210,8 +216,14 @@ def validate_loan_request(request, id):
             },
             status=HTTP_400_BAD_REQUEST,
         )
-    
-    result = controller.loans.create(recipient_address=Address(loan.recipient_address), time_to_expiration=time_to_expiration, funding_fee_atto_dai_per_dai=int(funding_fee_atto_dai_per_dai), payment_fee_atto_dai_per_dai=int(payment_fee_atto_dai_per_dai), requested_value_atto_dai=int(loan.requested_value_atto_dai)).get()
+
+    result = controller.loans.create(
+        recipient_address=Address(loan.recipient_address),
+        time_to_expiration=time_to_expiration,
+        funding_fee_atto_dai_per_dai=int(funding_fee_atto_dai_per_dai),
+        payment_fee_atto_dai_per_dai=int(payment_fee_atto_dai_per_dai),
+        requested_value_atto_dai=int(loan.requested_value_atto_dai),
+    ).get()
 
     loan.identifier = str(result.identifier)
     loan.state = 1
@@ -259,10 +271,12 @@ def reject_loan_request(request, id):
             {"error": "The given Loan Request as already been rejected"},
             status=HTTP_403_FORBIDDEN,
         )
-    
+
     if loan.state > 0:
         return Response(
-            {"error": "The given Loan Request as already been validated or withdrawn by the user"},
+            {
+                "error": "The given Loan Request as already been validated or withdrawn by the user"
+            },
             status=HTTP_403_FORBIDDEN,
         )
 
