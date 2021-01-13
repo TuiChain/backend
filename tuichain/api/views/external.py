@@ -13,7 +13,7 @@ from rest_framework.status import (
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from tuichain.api.models import Profile, IDVerifications
-from tuichain.api.services.id_verification import create_verification_intent
+from tuichain.api.services.id_verification import create_verification_intent, get_verification_intent
 
 
 @api_view(["GET"])
@@ -63,4 +63,52 @@ def request_id_verification(request):
             "person": verification_intent.person,
         },
         status=HTTP_201_CREATED,
+    )
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_id_verification_result(request, verification_intent_id):
+    """
+    Request ID Verification results to Stripe
+
+    Parameters
+    ----------
+    verification_intent_id : integer
+
+        verification identifier.
+
+    Returns
+    -------
+    200
+        Verification intent created successfully.
+
+    400
+        Verification intent not possible or return and refresh links missing.
+
+
+    """
+
+    user = request.user
+    try:
+        verification_intent = get_verification_intent(verification_intent_id)
+    except Exception as e:
+        return Response(
+            {
+                "error": "Could not create verification intent",
+                "details": e.args,
+            },
+            status=HTTP_400_BAD_REQUEST,
+        )
+    id_verification = user.id_verification
+
+    if verification_intent.status == 'succeeded':
+        id_verification.validated = True
+        id_verification.save()
+
+    return Response(
+        {
+            "message": "Verication results",
+            "data": verification_intent,
+        },
+        status=HTTP_200_OK,
     )

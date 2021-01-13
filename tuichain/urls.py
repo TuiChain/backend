@@ -55,6 +55,10 @@ urlpatterns = [
         "api/external/create_verification_intent/",
         external.request_id_verification,
     ),
+    path(
+        "api/external/get_verification_intent/<slug:verification_intent_id>",
+        external.get_id_verification_result,
+    ),
     # INVESTMENTS ROUTES
     path("api/investments/new/", investments.create_investment),
     path("api/investments/get_personal/", investments.get_personal_investments),
