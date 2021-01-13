@@ -13,7 +13,10 @@ from rest_framework.status import (
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from tuichain.api.models import Profile, IDVerifications
-from tuichain.api.services.id_verification import create_verification_intent, get_verification_intent
+from tuichain.api.services.id_verification import (
+    create_verification_intent,
+    get_verification_intent,
+)
 
 
 @api_view(["GET"])
@@ -65,6 +68,7 @@ def request_id_verification(request):
         status=HTTP_201_CREATED,
     )
 
+
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_id_verification_result(request, verification_intent_id):
@@ -101,7 +105,7 @@ def get_id_verification_result(request, verification_intent_id):
         )
     id_verification = user.id_verification
 
-    if verification_intent.status == 'succeeded':
+    if verification_intent.status == "succeeded":
         id_verification.validated = True
         id_verification.save()
 
