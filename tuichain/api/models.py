@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from tuichain.api.enums import LoanState
 
 
 class Profile(models.Model):
@@ -58,20 +59,18 @@ class IDVerifications(models.Model):
     validated = models.BooleanField(default=False)
 
 
-class LoanRequest(models.Model):
+class Loan(models.Model):
     id = models.AutoField(primary_key=True)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     request_date = models.DateTimeField(auto_now_add=True)
     school = models.CharField(max_length=100)
     course = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
-    amount = models.DecimalField(max_digits=8, decimal_places=2)
-    current_amount = models.DecimalField(
-        max_digits=8, decimal_places=2, default="0.00"
-    )
+    requested_value_atto_dai = models.CharField(max_length=40)
     description = models.CharField(max_length=5000)
-    # 0 - pending; 1 - funding; 2 - active; 3 - finished; 4 - expired; 5 - cancelled;
-    status = models.IntegerField(default=0)
+    state = models.IntegerField(default=LoanState.PENDING.value)
+    recipient_address = models.CharField(max_length=42)
+    identifier = models.CharField(max_length=42, null=True, blank=True)
 
     def to_dict(self):
         return {
@@ -81,17 +80,18 @@ class LoanRequest(models.Model):
             "school": self.school,
             "course": self.course,
             "destination": self.destination,
-            "amount": self.amount,
-            "current_amount": self.current_amount,
+            "requested_value_atto_dai": self.requested_value_atto_dai,
             "description": self.description,
-            "status": self.status,
+            "state": str(LoanState(self.state)),
+            "recipient_address": self.recipient_address,
+            "identifier": self.identifier,
         }
 
 
 class Investment(models.Model):
     id = models.AutoField(primary_key=True)
     investor = models.ForeignKey(User, on_delete=models.CASCADE)
-    request = models.ForeignKey(LoanRequest, on_delete=models.CASCADE)
+    request = models.ForeignKey(Loan, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     investment_date = models.DateTimeField(auto_now_add=True)
 
