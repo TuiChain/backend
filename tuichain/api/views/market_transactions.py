@@ -7,13 +7,18 @@ from rest_framework.status import HTTP_200_OK
 
 from tuichain_ethereum import Address, LoanIdentifier
 
+from tuichain.api.models import Loan
 from tuichain.api.services.blockchain import controller
 
 # ---------------------------------------------------------------------------- #
 
 
-def _transactions_to_response(transactions):
+def _get_loan(loan_id):
+    loan = Loan.objects.get(id=int(loan_id))
+    return controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
 
+
+def _transactions_to_response(transactions):
     return Response(
         {"transactions": [{"to": t.to, "data": t.data} for t in transactions]},
         status=HTTP_200_OK,
@@ -31,7 +36,7 @@ def create_sell_position(request):
 
     Parameters
     ----------
-    loan_identifier : string
+    loan_id : integer
 
         The identifier of the loan whose token the sell position refers to.
 
@@ -46,12 +51,8 @@ def create_sell_position(request):
 
     builder = controller.market.user_transaction_builder
 
-    loan = controller.loans.get_by_identifier(
-        LoanIdentifier(request.data["loan_identifier"])
-    )
-
     transactions = builder.create_sell_position(
-        loan=loan,
+        loan=_get_loan(request.data["loan_id"]),
         amount_tokens=int(request.data["amount_tokens"]),
         price_atto_dai_per_token=int(request.data["price_atto_dai_per_token"]),
     )
@@ -68,18 +69,16 @@ def remove_sell_position(request):
 
     Parameters
     ----------
-    loan_identifier : string
+    loan_id : integer
 
         The identifier of the loan whose token the sell position refers to.
     """
 
     builder = controller.market.user_transaction_builder
 
-    loan = controller.loans.get_by_identifier(
-        LoanIdentifier(request.data["loan_identifier"])
+    transactions = builder.remove_sell_position(
+        loan=_get_loan(request.data["loan_id"])
     )
-
-    transactions = builder.remove_sell_position(loan=loan)
 
     return _transactions_to_response(transactions)
 
@@ -93,7 +92,7 @@ def increase_sell_position_amount(request):
 
     Parameters
     ----------
-    loan_identifier : string
+    loan_id : integer
 
         The identifier of the loan whose token the sell position refers to.
 
@@ -104,12 +103,8 @@ def increase_sell_position_amount(request):
 
     builder = controller.market.user_transaction_builder
 
-    loan = controller.loans.get_by_identifier(
-        LoanIdentifier(request.data["loan_identifier"])
-    )
-
     transactions = builder.increase_sell_position_amount(
-        loan=loan,
+        loan=_get_loan(request.data["loan_id"]),
         increase_amount=int(request.data["increase_amount"]),
     )
 
@@ -125,7 +120,7 @@ def decrease_sell_position_amount(request):
 
     Parameters
     ----------
-    loan_identifier : string
+    loan_id : integer
 
         The identifier of the loan whose token the sell position refers to.
 
@@ -137,12 +132,8 @@ def decrease_sell_position_amount(request):
 
     builder = controller.market.user_transaction_builder
 
-    loan = controller.loans.get_by_identifier(
-        LoanIdentifier(request.data["loan_identifier"])
-    )
-
     transactions = builder.decrease_sell_position_amount(
-        loan=loan,
+        loan=_get_loan(request.data["loan_id"]),
         decrease_amount=int(request.data["decrease_amount"]),
     )
 
@@ -158,7 +149,7 @@ def update_sell_position_price(request):
 
     Parameters
     ----------
-    loan_identifier : string
+    loan_id : integer
 
         The identifier of the loan whose token the sell position refers to.
 
@@ -169,12 +160,8 @@ def update_sell_position_price(request):
 
     builder = controller.market.user_transaction_builder
 
-    loan = controller.loans.get_by_identifier(
-        LoanIdentifier(request.data["loan_identifier"])
-    )
-
     transactions = builder.update_sell_position_price(
-        loan=loan,
+        loan=_get_loan(request.data["loan_id"]),
         new_price_atto_dai_per_token=int(
             request.data["new_price_atto_dai_per_token"]
         ),
@@ -192,7 +179,7 @@ def purchase(request):
 
     Parameters
     ----------
-    loan_identifier : string
+    loan_id : integer
 
         The identifier of the loan whose token the sell position refers to.
 
@@ -215,12 +202,8 @@ def purchase(request):
 
     builder = controller.market.user_transaction_builder
 
-    loan = controller.loans.get_by_identifier(
-        LoanIdentifier(request.data["loan_identifier"])
-    )
-
     transactions = builder.purchase(
-        loan=loan,
+        loan=_get_loan(request.data["loan_id"]),
         seller_address=Address(request.data["seller_address"]),
         amount_tokens=int(request.data["amount_tokens"]),
         price_atto_dai_per_token=int(request.data["price_atto_dai_per_token"]),
