@@ -324,8 +324,12 @@ def get_loan(request, id):
     loan_dict = loan.to_dict()
 
     if loan.state == 2:
-        phase = controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).get_state().phase
-        loan_dict['state'] = phase.name
+        phase = (
+            controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
+            .get_state()
+            .phase
+        )
+        loan_dict["state"] = phase.name
 
     return Response(
         {
@@ -361,8 +365,14 @@ def get_personal_loans(request):
         for obj in loan_list:
             loan_dict = obj.to_dict()
             if obj.state == 2:
-                phase = controller.loans.get_by_identifier(LoanIdentifier(obj.identifier)).get_state().phase
-                loan_dict['state'] = phase.name
+                phase = (
+                    controller.loans.get_by_identifier(
+                        LoanIdentifier(obj.identifier)
+                    )
+                    .get_state()
+                    .phase
+                )
+                loan_dict["state"] = phase.name
             result[i] = loan_dict
 
     return Response(
@@ -394,15 +404,21 @@ def get_operating_loans(request):
     q = Loan.objects.exclude(state=3)
     loan_list = q.exclude(state=4)
 
-    print(loan_list.count()) 
+    print(loan_list.count())
     result = np.empty(shape=loan_list.count(), dtype=object)
 
     for i in range(loan_list.count()):
         for obj in loan_list:
             loan_dict = obj.to_dict()
             if obj.state == 2:
-                phase = controller.loans.get_by_identifier(LoanIdentifier(obj.identifier)).get_state().phase
-                loan_dict['state'] = phase.name
+                phase = (
+                    controller.loans.get_by_identifier(
+                        LoanIdentifier(obj.identifier)
+                    )
+                    .get_state()
+                    .phase
+                )
+                loan_dict["state"] = phase.name
             result[i] = loan_dict
 
     return Response(
@@ -414,6 +430,7 @@ def get_operating_loans(request):
         status=HTTP_200_OK,
     )
 
+
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_specific_state_loans(request, state, user_info):
@@ -423,7 +440,11 @@ def get_specific_state_loans(request, state, user_info):
     loan_list = Loan.objects.filter(state=getattr(LoanState, state).value)
 
     if loan_list is None:
-        identifiers_list = [loan.identifier for loan in controller.loans.get_all() if loan.get_state().phase == getattr(LoanPhase,state)]
+        identifiers_list = [
+            loan.identifier
+            for loan in controller.loans.get_all()
+            if loan.get_state().phase == getattr(LoanPhase, state)
+        ]
         loans = np.empty(shape=identifiers_list.count(), dtype=object)
         for i in range(0, identifiers_list.count() - 1):
             for identifier in identifiers_list:
@@ -432,12 +453,12 @@ def get_specific_state_loans(request, state, user_info):
         result = [obj.to_dict() for obj in loans]
     else:
         result = [obj.to_dict() for obj in loan_list]
-    
+
     if user_info:
         for obj in result:
-            user = Profile.objects.filter(user=obj['student']).first()
-            obj['user_full_name'] = user.full_name
-                
+            user = Profile.objects.filter(user=obj["student"]).first()
+            obj["user_full_name"] = user.full_name
+
     return Response(
         {
             "message": "Loan Requests fetched with success",
