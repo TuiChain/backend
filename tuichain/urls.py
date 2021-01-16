@@ -73,22 +73,14 @@ urlpatterns = [
     path("api/loans/reject/<int:id>/", loans.reject_loan_request),
     path(
         "api/loans/get_personal/",
-        loans.get_personal_loan_requests,
+        loans.get_personal_loans,
     ),
-    path("api/loans/get_all/", loans.get_all_loan_requests),
+    path("api/loans/get_operating/", loans.get_operating_loans),
     path(
-        "api/loans/get_non_validated/",
-        loans.get_non_validated_loan_requests,
+        "api/loans/get_state/<str:state>/<int:user_info>/",
+        loans.get_specific_state_loans,
     ),
-    path(
-        "api/loans/get_state/<int:status>/",
-        loans.get_specific_state_loan_requests,
-    ),
-    path("api/loans/get/<int:id>/", loans.get_loan_request),
-    path(
-        "api/loans/get/<int:id>/investments/",
-        loans.get_loan_request_investments,
-    ),
+    path("api/loans/get/<int:id>/", loans.get_loan),
     path(
         "api/loans/user_withdraw/<int:id>/",
         loans.withdraw_loan_request,

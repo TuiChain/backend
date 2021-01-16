@@ -6,13 +6,14 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
 )
-from tuichain.api.models import Loan, Investment
+from tuichain.api.models import Loan, Investment, Profile
 from tuichain.api.enums import LoanState
 from tuichain.api.services.blockchain import controller
-from tuichain_ethereum import Address
+from tuichain_ethereum import Address, LoanIdentifier
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 import decimal
+import numpy as np
 from datetime import timedelta
 
 
@@ -244,7 +245,7 @@ def validate_loan_request(request, id):
     ).get()
 
     loan.identifier = str(result.identifier)
-    loan.state = 1
+    loan.state = 2
     loan.save()
 
     return Response(
@@ -308,7 +309,7 @@ def reject_loan_request(request, id):
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
-def get_loan_request(request, id):
+def get_loan(request, id):
     """
     Get Loan Request with given ID
 
@@ -338,10 +339,16 @@ def get_loan_request(request, id):
             status=HTTP_404_NOT_FOUND,
         )
 
+    loan_dict = loan.to_dict()
+
+    if loan.state == 2:
+        phase = controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).get_state().phase
+        loan_dict['state'] = phase.name
+
     return Response(
         {
             "message": "Loan Request found with success",
-            "loan_request": loan.to_dict(),
+            "loan": loan_dict,
         },
         status=HTTP_200_OK,
     )
@@ -349,7 +356,7 @@ def get_loan_request(request, id):
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
-def get_personal_loan_requests(request):
+def get_personal_loans(request):
     """
     Get Loan Requests made by the authenticated user
 
@@ -366,8 +373,15 @@ def get_personal_loan_requests(request):
     user = request.user
 
     loan_list = Loan.objects.filter(student=user)
+    result = np.empty(shape=loan_list.count(), dtype=object)
 
-    result = [obj.to_dict() for obj in loan_list]
+    for i in range(loan_list.count()):
+        for obj in loan_list:
+            loan_dict = obj.to_dict()
+            if obj.state == 2:
+                phase = controller.loans.get_by_identifier(LoanIdentifier(obj.identifier)).get_state().phase
+                loan_dict['state'] = phase.name
+            result[i] = loan_dict
 
     return Response(
         {
@@ -381,9 +395,9 @@ def get_personal_loan_requests(request):
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
-def get_all_loan_requests(request):
+def get_operating_loans(request):
     """
-    Get all active loan requests
+    Get all operating loans
 
     Parameters
     ----------
@@ -391,116 +405,62 @@ def get_all_loan_requests(request):
     Returns
     -------
     200
-        Loan requests fetched with success.
+        Loans fetched with success.
 
     """
 
     q = Loan.objects.exclude(state=3)
     loan_list = q.exclude(state=4)
 
-    result = [obj.to_dict() for obj in loan_list]
+    print(loan_list.count()) 
+    result = np.empty(shape=loan_list.count(), dtype=object)
+
+    for i in range(loan_list.count()):
+        for obj in loan_list:
+            loan_dict = obj.to_dict()
+            if obj.state == 2:
+                phase = controller.loans.get_by_identifier(LoanIdentifier(obj.identifier)).get_state().phase
+                loan_dict['state'] = phase.name
+            result[i] = loan_dict
 
     return Response(
         {
-            "message": "Loan Requests fetched with success",
+            "message": "Loans fetched with success",
             "loans": result,
             "count": len(result),
         },
         status=HTTP_200_OK,
     )
-
-
-@api_view(["GET"])
-@permission_classes((IsAdminUser,))
-def get_non_validated_loan_requests(request):
-    """
-    Get all active and non_validated loan requests
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    200
-        loan requests fetched with success.
-
-    """
-
-    loan_list = Loan.objects.filter(state=0)
-
-    result = [obj.to_dict() for obj in loan_list]
-
-    return Response(
-        {
-            "message": "Loan Requests fetched with success",
-            "loans": result,
-            "count": len(result),
-        },
-        status=HTTP_200_OK,
-    )
-
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
-def get_specific_state_loan_requests(request, status):
+def get_specific_state_loans(request, state, user_info):
     """
-    Get all loan requests at a given state
+    Get all loans at a given state with respective user_info, if requested.
     """
-    user = request.user
+    loan_list = Loan.objects.filter(state=getattr(LoanState, state).value)
 
-    loan_list = Loan.objects.filter(student=user, state=state)
-
-    result = [obj.to_dict() for obj in loan_list]
-
+    if loan_list is None:
+        identifiers_list = [loan.identifier for loan in controller.loans.get_all() if loan.get_state().phase == getattr(LoanPhase,state)]
+        loans = np.empty(shape=identifiers_list.count(), dtype=object)
+        for i in range(0, identifiers_list.count() - 1):
+            for identifier in identifiers_list:
+                loan = Loan.objects.filter(identifier=identifier).first()
+                loans[i] = loan
+        result = [obj.to_dict() for obj in loans]
+    else:
+        result = [obj.to_dict() for obj in loan_list]
+    
+    if user_info:
+        for obj in result:
+            user = Profile.objects.filter(user=obj['student']).first()
+            obj['user_full_name'] = user.full_name
+                
     return Response(
         {
             "message": "Loan Requests fetched with success",
             "loans": result,
             "count": len(result),
-        },
-        status=HTTP_200_OK,
-    )
-
-
-@api_view(["GET"])
-@permission_classes((IsAuthenticated,))
-def get_loan_request_investments(request, id):
-    """
-    Get investments for a given loan request
-
-    Parameters
-    ----------
-    id : integer
-
-        Loan request's identifier.
-
-    Returns
-    -------
-    200
-        Investments from given loan requests fetched successfully.
-
-    404
-        Loan request not found.
-
-    """
-
-    loan = Loan.objects.filter(id=id).first()
-
-    if loan is None:
-        return Response(
-            {"error": "Loan Request with given ID not found"},
-            status=HTTP_404_NOT_FOUND,
-        )
-
-    investments = Investment.objects.filter(request=loan)
-
-    result = [obj.to_dict() for obj in investments]
-
-    return Response(
-        {
-            "message": "Investments fetched with success for the given Loan Request",
-            "count": len(result),
-            "investments": result,
         },
         status=HTTP_200_OK,
     )
