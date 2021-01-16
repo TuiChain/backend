@@ -6,10 +6,10 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
 )
-from tuichain.api.models import Loan, Investment, Profile
+from tuichain.api.models import Loan, Profile
 from tuichain.api.enums import LoanState
 from tuichain.api.services.blockchain import controller
-from tuichain_ethereum import Address, LoanIdentifier
+from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 import decimal
@@ -361,19 +361,18 @@ def get_personal_loans(request):
     loan_list = Loan.objects.filter(student=user)
     result = np.empty(shape=loan_list.count(), dtype=object)
 
-    for i in range(loan_list.count()):
-        for obj in loan_list:
-            loan_dict = obj.to_dict()
-            if obj.state == 2:
-                phase = (
-                    controller.loans.get_by_identifier(
-                        LoanIdentifier(obj.identifier)
-                    )
-                    .get_state()
-                    .phase
+    for i, obj in zip(range(loan_list.count()), loan_list):
+        loan_dict = obj.to_dict()
+        if obj.state == 2:
+            phase = (
+                controller.loans.get_by_identifier(
+                    LoanIdentifier(obj.identifier)
                 )
-                loan_dict["state"] = phase.name
-            result[i] = loan_dict
+                .get_state()
+                .phase
+            )
+            loan_dict["state"] = phase.name
+        result[i] = loan_dict
 
     return Response(
         {
@@ -407,19 +406,18 @@ def get_operating_loans(request):
     print(loan_list.count())
     result = np.empty(shape=loan_list.count(), dtype=object)
 
-    for i in range(loan_list.count()):
-        for obj in loan_list:
-            loan_dict = obj.to_dict()
-            if obj.state == 2:
-                phase = (
-                    controller.loans.get_by_identifier(
-                        LoanIdentifier(obj.identifier)
-                    )
-                    .get_state()
-                    .phase
+    for i, obj in zip(range(loan_list.count()), loan_list):
+        loan_dict = obj.to_dict()
+        if obj.state == 2:
+            phase = (
+                controller.loans.get_by_identifier(
+                    LoanIdentifier(obj.identifier)
                 )
-                loan_dict["state"] = phase.name
-            result[i] = loan_dict
+                .get_state()
+                .phase
+            )
+            loan_dict["state"] = phase.name
+        result[i] = loan_dict
 
     return Response(
         {
@@ -437,22 +435,31 @@ def get_specific_state_loans(request, state, user_info):
     """
     Get all loans at a given state with respective user_info, if requested.
     """
-    loan_list = Loan.objects.filter(state=getattr(LoanState, state).value)
+    if state in LoanState.__members__:
+        loan_list = Loan.objects.filter(state=getattr(LoanState, state).value)
+        result = [obj.to_dict() for obj in loan_list]
 
-    if loan_list is None:
+    elif state in LoanPhase.__members__:
         identifiers_list = [
             loan.identifier
             for loan in controller.loans.get_all()
             if loan.get_state().phase == getattr(LoanPhase, state)
         ]
-        loans = np.empty(shape=identifiers_list.count(), dtype=object)
-        for i in range(0, identifiers_list.count() - 1):
-            for identifier in identifiers_list:
-                loan = Loan.objects.filter(identifier=identifier).first()
-                loans[i] = loan
-        result = [obj.to_dict() for obj in loans]
+
+        result = np.empty(shape=len(identifiers_list), dtype=object)
+
+        for i, identifier in zip(
+            range(len(identifiers_list)), identifiers_list
+        ):
+            loan = Loan.objects.filter(identifier=identifier).first()
+            loan_dict = loan.to_dict()
+            loan_dict["state"] = state
+            result[i] = loan_dict
+
     else:
-        result = [obj.to_dict() for obj in loan_list]
+        return Response(
+            {"error": "Unexistent Loan State"}, status=HTTP_404_NOT_FOUND
+        )
 
     if user_info:
         for obj in result:
