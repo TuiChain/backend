@@ -335,8 +335,8 @@ def get_loan(request, id):
         funded_value_atto_dai = fetched_loan.get_state().funded_value_atto_dai
         loan_dict["funded_value_atto_dai"] = funded_value_atto_dai
 
-        token_contact_adress = fetched_loan.token_contract_adress()
-        loan_dict["token_address"] = str(token_contact_adress)
+        token_contact_address = fetched_loan.token_contract_address()
+        loan_dict["token_address"] = str(token_contact_address)
 
     return Response(
         {
