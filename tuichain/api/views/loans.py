@@ -13,7 +13,6 @@ from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 import decimal
-import numpy as np
 from datetime import timedelta
 
 
@@ -82,8 +81,8 @@ def create_loan_request(request):
     # TODO: verify if User has complete profile and validated identity
 
     q = Loan.objects.filter(student=user)
-    q = q.exclude(state=3)
-    loans = q.exclude(state=4)
+    q = q.exclude(state=LoanState.WITHDRAWN.value)
+    loans = q.exclude(state=LoanState.REJECTED.value)
 
     if len(loans) >= 1:
         return Response(
@@ -134,14 +133,14 @@ def withdraw_loan_request(request, id):
             status=HTTP_403_FORBIDDEN,
         )
 
-    if loan.state > 0:
+    if loan.state > LoanState.PENDING.value:
         return Response(
             {"error": "That Loan Request cannot be withdrawn"},
             status=HTTP_400_BAD_REQUEST,
         )
 
     # set status as withdrawn
-    loan.state = 3
+    loan.state = LoanState.WITHDRAWN.value
     loan.save()
 
     return Response(
@@ -200,10 +199,13 @@ def validate_loan_request(request, id):
             {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
         )
 
-    if loan.state > 0 and loan.state <= 4:
+    if (
+        loan.state > LoanState.CREATING.value
+        and loan.state <= LoanState.REJECTED.value
+    ):
         return Response(
             {
-                "error": "The given Loan Request as already been validated or rejected"
+                "error": "The given Loan Request as already been validated, rejected or withdrawn"
             },
             status=HTTP_403_FORBIDDEN,
         )
@@ -227,7 +229,7 @@ def validate_loan_request(request, id):
     ).get()
 
     loan.identifier = str(result.identifier)
-    loan.state = 2
+    loan.state = LoanState.APPROVED.value
     loan.save()
 
     return Response(
@@ -267,13 +269,13 @@ def reject_loan_request(request, id):
             {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
         )
 
-    if loan.state == 4:
+    if loan.state == LoanState.REJECTED.value:
         return Response(
             {"error": "The given Loan Request as already been rejected"},
             status=HTTP_403_FORBIDDEN,
         )
 
-    if loan.state > 0:
+    if loan.state > LoanState.PENDING.value:
         return Response(
             {
                 "error": "The given Loan Request as already been validated or withdrawn by the user"
@@ -281,7 +283,7 @@ def reject_loan_request(request, id):
             status=HTTP_403_FORBIDDEN,
         )
 
-    loan.state = 4
+    loan.state = LoanState.REJECTED.value
     loan.save()
 
     return Response(
@@ -323,13 +325,20 @@ def get_loan(request, id):
 
     loan_dict = loan.to_dict()
 
-    if loan.state == 2:
+    if loan.state == LoanState.APPROVED.value:
         phase = (
             controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
             .get_state()
             .phase
         )
         loan_dict["state"] = phase.name
+
+        funded_value_atto_dai = (
+            controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
+            .get_state()
+            .funded_value_atto_dai
+        )
+        loan_dict["funded_value_atto_dai"] = funded_value_atto_dai
 
     return Response(
         {
@@ -359,11 +368,11 @@ def get_personal_loans(request):
     user = request.user
 
     loan_list = Loan.objects.filter(student=user)
-    result = np.empty(shape=loan_list.count(), dtype=object)
+    result = []
 
-    for i, obj in zip(range(loan_list.count()), loan_list):
+    for obj in loan_list:
         loan_dict = obj.to_dict()
-        if obj.state == 2:
+        if obj.state == LoanState.APPROVED.value:
             phase = (
                 controller.loans.get_by_identifier(
                     LoanIdentifier(obj.identifier)
@@ -372,7 +381,7 @@ def get_personal_loans(request):
                 .phase
             )
             loan_dict["state"] = phase.name
-        result[i] = loan_dict
+        result.append(loan_dict)
 
     return Response(
         {
@@ -400,15 +409,14 @@ def get_operating_loans(request):
 
     """
 
-    q = Loan.objects.exclude(state=3)
-    loan_list = q.exclude(state=4)
+    q = Loan.objects.exclude(state=LoanState.WITHDRAWN.value)
+    loan_list = q.exclude(state=LoanState.REJECTED.value)
 
-    print(loan_list.count())
-    result = np.empty(shape=loan_list.count(), dtype=object)
+    result = []
 
-    for i, obj in zip(range(loan_list.count()), loan_list):
+    for obj in loan_list:
         loan_dict = obj.to_dict()
-        if obj.state == 2:
+        if obj.state == LoanState.APPROVED.value:
             phase = (
                 controller.loans.get_by_identifier(
                     LoanIdentifier(obj.identifier)
@@ -417,7 +425,7 @@ def get_operating_loans(request):
                 .phase
             )
             loan_dict["state"] = phase.name
-        result[i] = loan_dict
+        result.append(loan_dict)
 
     return Response(
         {
@@ -446,15 +454,13 @@ def get_specific_state_loans(request, state, user_info):
             if loan.get_state().phase == getattr(LoanPhase, state)
         ]
 
-        result = np.empty(shape=len(identifiers_list), dtype=object)
+        result = []
 
-        for i, identifier in zip(
-            range(len(identifiers_list)), identifiers_list
-        ):
+        for identifier in identifiers_list:
             loan = Loan.objects.filter(identifier=identifier).first()
             loan_dict = loan.to_dict()
             loan_dict["state"] = state
-            result[i] = loan_dict
+            result.append(loan_dict)
 
     else:
         return Response(
