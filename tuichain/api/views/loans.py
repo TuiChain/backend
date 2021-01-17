@@ -326,24 +326,17 @@ def get_loan(request, id):
     loan_dict = loan.to_dict()
 
     if loan.state == LoanState.APPROVED.value:
-        phase = (
-            controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
-            .get_state()
-            .phase
+        fetched_loan = controller.loans.get_by_identifier(
+            LoanIdentifier(loan.identifier)
         )
+        phase = fetched_loan.get_state().phase
         loan_dict["state"] = phase.name
 
-        funded_value_atto_dai = (
-            controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
-            .get_state()
-            .funded_value_atto_dai
-        )
+        funded_value_atto_dai = fetched_loan.get_state().funded_value_atto_dai
         loan_dict["funded_value_atto_dai"] = funded_value_atto_dai
 
-        token_contact_adress = controller.loans.get_by_identifier(
-            LoanIdentifier(loan.identifier)
-        ).token_contract_adress()
-        loan_dict["token_contract_address"] = str(token_contact_adress)
+        token_contact_adress = fetched_loan.token_contract_adress()
+        loan_dict["token_address"] = str(token_contact_adress)
 
     return Response(
         {
@@ -454,7 +447,9 @@ def get_operating_loans(request):
 
     for obj in loan_list:
         loan_dict = obj.to_dict()
-        if obj.state == LoanState.APPROVED.value:
+        if obj.state != LoanState.APPROVED.value:
+            result.append(loan_dict)
+        else:
             phase = (
                 controller.loans.get_by_identifier(
                     LoanIdentifier(obj.identifier)
@@ -462,8 +457,9 @@ def get_operating_loans(request):
                 .get_state()
                 .phase
             )
-            loan_dict["state"] = phase.name
-        result.append(loan_dict)
+            if phase.name != "CANCELED" or phase.name != "EXPIRED":
+                loan_dict["state"] = phase.name
+                result.append(loan_dict)
 
     return Response(
         {
