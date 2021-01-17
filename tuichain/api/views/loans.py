@@ -450,14 +450,11 @@ def get_operating_loans(request):
         if obj.state != LoanState.APPROVED.value:
             result.append(loan_dict)
         else:
-            phase = (
-                controller.loans.get_by_identifier(
-                    LoanIdentifier(obj.identifier)
-                )
-                .get_state()
-                .phase
+            loan = controller.loans.get_by_identifier(
+                LoanIdentifier(obj.identifier)
             )
-            if phase.name != "CANCELED" or phase.name != "EXPIRED":
+            phase = loan.get_state().phase
+            if phase not in [LoanPhase.CANCELED, LoanPhase.EXPIRED]:
                 loan_dict["state"] = phase.name
                 result.append(loan_dict)
 
