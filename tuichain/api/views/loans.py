@@ -340,7 +340,9 @@ def get_loan(request, id):
         )
         loan_dict["funded_value_atto_dai"] = funded_value_atto_dai
 
-        token_contact_adress = controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).token_contract_adress()
+        token_contact_adress = controller.loans.get_by_identifier(
+            LoanIdentifier(loan.identifier)
+        ).token_contract_adress()
         loan_dict["token_contract_address"] = str(token_contact_adress)
 
     return Response(
@@ -395,6 +397,7 @@ def get_personal_loans(request):
         status=HTTP_200_OK,
     )
 
+
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_all_loans(request):
@@ -417,7 +420,7 @@ def get_all_loans(request):
             )
             loan_dict["state"] = phase.name
         result.append(loan_dict)
-    
+
     return Response(
         {
             "message": "Loan Requests fetched with success",
@@ -426,6 +429,7 @@ def get_all_loans(request):
         },
         status=HTTP_200_OK,
     )
+
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
