@@ -75,6 +75,7 @@ urlpatterns = [
         "api/loans/get_personal/",
         loans.get_personal_loans,
     ),
+    path("api/loans/get_all/", loans.get_all_loans),
     path("api/loans/get_operating/", loans.get_operating_loans),
     path(
         "api/loans/get_state/<str:state>/<int:user_info>/",
