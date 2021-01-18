@@ -19,7 +19,7 @@ from tuichain.api.services.blockchain import controller
 def get_blockchain_info(request):
     """
     Get Blockchain information
-    
+
     Parameters
     ----------
 

@@ -116,7 +116,7 @@ def create_loan_request(request):
 def withdraw_loan_request(request, id):
     """
     Withdraw a pending Loan Request
-    
+
     Parameters
     ----------
     id : integer
@@ -185,7 +185,7 @@ def validate_loan_request(request, id):
     -------
     201
         Loan request validated successfully.
-    
+
     400
         Loan request fields are missing.
 
@@ -418,7 +418,7 @@ def get_personal_loans(request):
 def get_all_loans(request):
     """
     Get all loans
-    
+
     Parameters
     ----------
 
@@ -504,13 +504,13 @@ def get_operating_loans(request):
 def get_specific_state_loans(request, state, user_info):
     """
     Get all loans at a given state with respective user_info, if requested.
-    
+
     Parameters
     ----------
     state : integer
 
         Loan's state.
-    
+
     user_info : integer
 
         Flag that tells if information about user should be used or not.
