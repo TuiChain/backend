@@ -19,6 +19,15 @@ from tuichain.api.services.blockchain import controller
 def get_blockchain_info(request):
     """
     Get Blockchain information
+    
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        Blockchain information fetched with success.
+
     """
 
     return Response(

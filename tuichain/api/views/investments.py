@@ -1,3 +1,4 @@
+<<<<<<< ddd41ab7f288ae5a27ec24f81ebcbaa082d753ac
 # ---------------------------------------------------------------------------- #
 
 from rest_framework.decorators import api_view, permission_classes
@@ -9,7 +10,6 @@ from tuichain.api.models import Loan, Profile
 from itertools import chain
 
 from tuichain_ethereum import LoanIdentifier, Address
-
 from tuichain.api.services.blockchain import controller
 
 # ---------------------------------------------------------------------------- #
