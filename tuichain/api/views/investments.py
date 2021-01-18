@@ -59,9 +59,7 @@ def create_investment(request):
     loan = Loan.objects.filter(id=loan_id).first()
 
     if loan is None:
-        return Response(
-            {"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
 
     if loan.student == user.id:
         return Response(
