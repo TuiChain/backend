@@ -87,6 +87,7 @@ class Loan(models.Model):
             "identifier": self.identifier,
         }
 
+
 # SIGNALS
 
 # Create Auth token automatically when a User is created

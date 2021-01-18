@@ -48,9 +48,15 @@ def get_personal_investments(request, user_addr):
     invested_loans = []
 
     loan_identifiers = frozenset(
-	    chain(
-		    (loan.identifier for loan in controller.loans.get_by_token_holder(adr)),
-		    (sp.loan.identifier for sp in controller.market.get_sell_positions_by_seller(adr))
+        chain(
+            (
+                loan.identifier
+                for loan in controller.loans.get_by_token_holder(adr)
+            ),
+            (
+                sp.loan.identifier
+                for sp in controller.market.get_sell_positions_by_seller(adr)
+            ),
         )
     )
 
@@ -58,25 +64,27 @@ def get_personal_investments(request, user_addr):
 
         l = controller.loans.get_by_identifier(loan_id)
 
-        student_id = Loan.objects.filter(identifier=str(l.identifier)).first().student
+        student_id = (
+            Loan.objects.filter(identifier=str(l.identifier)).first().student
+        )
 
         student_name = Profile.objects.filter(user=student_id).first().full_name
-        loan_dict = Loan.objects.filter(
-                identifier=str(l.identifier)
-            ).first().to_dict()
-        loan_dict["state"]=l.get_state().phase.name
+        loan_dict = (
+            Loan.objects.filter(identifier=str(l.identifier)).first().to_dict()
+        )
+        loan_dict["state"] = l.get_state().phase.name
 
         loan_obj = {
             "loan": loan_dict,
             "name": student_name,
             "nrTokens": l.get_token_balance_of(adr),
-            #"nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
+            # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
             #    l, adr
-            #),
+            # ),
         }
 
         loans_arr.append(loan_obj)
-    
+
     return Response(
         {
             "message": "Personal investments fetched with success",
@@ -119,16 +127,18 @@ def get_investment(request, id, user_addr):
     )
     student_name = Profile.objects.filter(user=student_id).first().full_name
 
-    loan_dict = Loan.objects.filter(identifier=str(loan.identifier)).first().to_dict()
-    loan_dict["state"]=loan.get_state().phase.name
+    loan_dict = (
+        Loan.objects.filter(identifier=str(loan.identifier)).first().to_dict()
+    )
+    loan_dict["state"] = loan.get_state().phase.name
 
     loan_obj = {
         "loan": loan_dict,
         "name": student_name,
         "nrTokens": loan.get_token_balance_of(adr),
-        #"nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
+        # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
         #    loan, adr
-        #),
+        # ),
     }
 
     return Response(

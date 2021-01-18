@@ -15,45 +15,113 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('full_name', models.CharField(blank=True, max_length=200, null=True)),
-                ('birth_date', models.DateField(blank=True, null=True)),
-                ('address', models.CharField(blank=True, max_length=200, null=True)),
-                ('zip_code', models.CharField(blank=True, max_length=20, null=True)),
-                ('city', models.CharField(blank=True, max_length=100, null=True)),
-                ('country', models.CharField(blank=True, max_length=100, null=True)),
-                ('short_bio', models.CharField(blank=True, max_length=500, null=True)),
-                ('profile_image', models.FileField(blank=True, null=True, upload_to='media/photos')),
-                ('id_number', models.IntegerField(blank=True, null=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "full_name",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("birth_date", models.DateField(blank=True, null=True)),
+                (
+                    "address",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                (
+                    "zip_code",
+                    models.CharField(blank=True, max_length=20, null=True),
+                ),
+                (
+                    "city",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "country",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "short_bio",
+                    models.CharField(blank=True, max_length=500, null=True),
+                ),
+                (
+                    "profile_image",
+                    models.FileField(
+                        blank=True, null=True, upload_to="media/photos"
+                    ),
+                ),
+                ("id_number", models.IntegerField(blank=True, null=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Loan',
+            name="Loan",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('request_date', models.DateTimeField(auto_now_add=True)),
-                ('school', models.CharField(max_length=100)),
-                ('course', models.CharField(max_length=100)),
-                ('destination', models.CharField(max_length=100)),
-                ('requested_value_atto_dai', models.CharField(max_length=40)),
-                ('description', models.CharField(max_length=5000)),
-                ('state', models.IntegerField(default=0)),
-                ('recipient_address', models.CharField(max_length=42)),
-                ('identifier', models.CharField(blank=True, max_length=42, null=True)),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("request_date", models.DateTimeField(auto_now_add=True)),
+                ("school", models.CharField(max_length=100)),
+                ("course", models.CharField(max_length=100)),
+                ("destination", models.CharField(max_length=100)),
+                ("requested_value_atto_dai", models.CharField(max_length=40)),
+                ("description", models.CharField(max_length=5000)),
+                ("state", models.IntegerField(default=0)),
+                ("recipient_address", models.CharField(max_length=42)),
+                (
+                    "identifier",
+                    models.CharField(blank=True, max_length=42, null=True),
+                ),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='IDVerifications',
+            name="IDVerifications",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('verification_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('person_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('validated', models.BooleanField(default=False)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='id_verification', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "verification_id",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "person_id",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("validated", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="id_verification",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
