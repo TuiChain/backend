@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib import admin
-from django.views.static import serve
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
@@ -9,9 +8,11 @@ from tuichain.api.views import (
     auth,
     users,
     investments,
-    loanrequests,
+    loans,
     external,
     blockchain,
+    loan_transactions,
+    market_transactions,
 )
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -42,6 +43,7 @@ urlpatterns = [
     path("api/auth/verify_username/", auth.verify_username),
     path("api/auth/reset_password/<int:id>/<str:token>/", auth.reset_password),
     path("api/auth/email_reset_password/", auth.email_reset_password),
+    path("api/auth/is_admin/", auth.is_admin_user),
     # USER ROUTES
     path("api/users/get/<int:id>/", users.get_user),
     path("api/users/get/", users.get_me),
@@ -54,41 +56,75 @@ urlpatterns = [
         "api/external/create_verification_intent/",
         external.request_id_verification,
     ),
+    path(
+        "api/external/get_verification_intent/<slug:verification_intent_id>",
+        external.get_id_verification_result,
+    ),
     # INVESTMENTS ROUTES
     path("api/investments/new/", investments.create_investment),
     path("api/investments/get_personal/", investments.get_personal_investments),
     path("api/investments/get/<int:id>/", investments.get_investment),
     # LOAN REQUESTS ROUTES
-    path("api/loanrequests/new/", loanrequests.create_loan_request),
+    path("api/loans/new/", loans.create_loan_request),
     path(
-        "api/loanrequests/validate/<int:id>/",
-        loanrequests.validate_loan_request,
+        "api/loans/validate/<int:id>/",
+        loans.validate_loan_request,
     ),
-    path("api/loanrequests/close/<int:id>/", loanrequests.close_loan_request),
+    path("api/loans/reject/<int:id>/", loans.reject_loan_request),
     path(
-        "api/loanrequests/get_personal/",
-        loanrequests.get_personal_loan_requests,
+        "api/loans/get_personal/",
+        loans.get_personal_loans,
     ),
-    path("api/loanrequests/get_all/", loanrequests.get_all_loan_requests),
+    path("api/loans/get_all/", loans.get_all_loans),
+    path("api/loans/get_operating/", loans.get_operating_loans),
     path(
-        "api/loanrequests/get_non_validated/",
-        loanrequests.get_non_validated_loan_requests,
+        "api/loans/get_state/<str:state>/<int:user_info>/",
+        loans.get_specific_state_loans,
+    ),
+    path("api/loans/get/<int:id>/", loans.get_loan),
+    path(
+        "api/loans/user_withdraw/<int:id>/",
+        loans.withdraw_loan_request,
+    ),
+    # USER TRANSACTIONS
+    path(
+        "api/loans/transactions/provide_funds/",
+        loan_transactions.provide_funds,
     ),
     path(
-        "api/loanrequests/get_state/<int:status>/",
-        loanrequests.get_specific_state_loan_requests,
-    ),
-    path("api/loanrequests/get/<int:id>/", loanrequests.get_loan_request),
-    path(
-        "api/loanrequests/get/<int:id>/investments/",
-        loanrequests.get_loan_request_investments,
+        "api/loans/transactions/withdraw_funds/",
+        loan_transactions.withdraw_funds,
     ),
     path(
-        "api/loanrequests/cancel_pending/<int:id>/",
-        loanrequests.cancel_loan_request,
+        "api/loans/transactions/make_payment/", loan_transactions.make_payment
     ),
+    path(
+        "api/loans/transactions/redeem_tokens/",
+        loan_transactions.redeem_tokens,
+    ),
+    path(
+        "api/market/transactions/create_sell_position/",
+        market_transactions.create_sell_position,
+    ),
+    path(
+        "api/market/transactions/remove_sell_position/",
+        market_transactions.remove_sell_position,
+    ),
+    path(
+        "api/market/transactions/increase_sell_position_amount/",
+        market_transactions.increase_sell_position_amount,
+    ),
+    path(
+        "api/market/transactions/decrease_sell_position_amount/",
+        market_transactions.decrease_sell_position_amount,
+    ),
+    path(
+        "api/market/transactions/update_sell_position_price/",
+        market_transactions.update_sell_position_price,
+    ),
+    path("api/market/transactions/purchase/", market_transactions.purchase),
     # DOCUMENTATION ROUTES
-    re_path(r"^swagger/", include_docs_urls(title="Tuichain API")),
+    re_path(r"^api/docs/", include_docs_urls(title="Tuichain API")),
     #    re_path(
     #        r"^swagger(?P<format>\.json|\.yaml)$",
     #        schema_view.without_ui(cache_timeout=0),
@@ -105,21 +141,3 @@ urlpatterns = [
     #        name="schema-redoc",
     #    ),
 ]
-
-if settings.FRONTEND_DIR is not None:
-
-    urlpatterns += [
-        re_path(
-            r"^(?P<path>[^/]+\.[^/]+)$",
-            serve,
-            kwargs={"document_root": settings.FRONTEND_DIR},
-        ),
-        re_path(
-            r"",
-            serve,
-            kwargs={
-                "path": "index.html",
-                "document_root": settings.FRONTEND_DIR,
-            },
-        ),
-    ]

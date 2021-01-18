@@ -16,14 +16,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from dotenv import load_dotenv
 from os import environ
+import os
 from pathlib import Path
 from tuichain_ethereum import Address, PrivateKey
-from web3 import (
-    EthereumTesterProvider,
-    HTTPProvider,
-    IPCProvider,
-    WebsocketProvider,
-)
+from web3 import HTTPProvider, IPCProvider, WebsocketProvider
 
 # ---------------------------------------------------------------------------- #
 
@@ -50,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Django Rest Framework
     "rest_framework",
     "rest_framework.authtoken",
@@ -61,8 +58,10 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
-if environ["FRONTEND_DIR"]:
-    INSTALLED_APPS.append("django.contrib.staticfiles")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_URL = "/static/"
+
 
 MIDDLEWARE = [
     # CORS
@@ -85,7 +84,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
-        "APP_DIRS": False,
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -96,25 +95,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# ---------------------------------------------------------------------------- #
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-if environ["FRONTEND_DIR"]:
-
-    FRONTEND_DIR = Path(environ["FRONTEND_DIR"])
-
-    STATIC_URL = "/static/"
-    STATICFILES_DIRS = [FRONTEND_DIR / "static"]
-    STATICFILES_STORAGE = None
-    STATICFILES_FINDERS = [
-        "django.contrib.staticfiles.finders.FileSystemFinder"
-    ]
-
-else:
-
-    FRONTEND_DIR = None
 
 # ---------------------------------------------------------------------------- #
 # Database
@@ -148,22 +128,81 @@ eth_provider = environ["ETHEREUM_PROVIDER"]
 eth_master_acc = environ["ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY"]
 eth_controller_address = environ["ETHEREUM_CONTROLLER_ADDRESS"]
 
-if eth_provider == "test":
-    ETHEREUM_PROVIDER = EthereumTesterProvider()
-elif eth_provider.startswith("http://") or eth_provider.startswith("https://"):
-    ETHEREUM_PROVIDER = HTTPProvider(eth_provider)
-elif eth_provider.startswith("ws://"):
-    ETHEREUM_PROVIDER = WebsocketProvider(eth_provider)
+if not eth_provider:
+
+    assert not eth_master_acc
+    assert not eth_controller_address
+
+    from eth_tester import EthereumTester
+    from tuichain_ethereum import Controller
+    from tuichain_ethereum.test import DaiMockContract
+    from web3 import EthereumTesterProvider, Web3
+    import eth_tester.backends.pyevm.main
+
+    eth_tester.backends.pyevm.main.GENESIS_GAS_LIMIT = 8_000_000
+
+    # create test chain and generate master account
+
+    chain = EthereumTester()
+
+    ETHEREUM_PROVIDER = EthereumTesterProvider(chain)
+
+    # generate master account and transfer 100 thousand ether to it
+
+    ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY = PrivateKey.random()
+
+    chain.add_account(bytes(ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY).hex())
+
+    Web3(ETHEREUM_PROVIDER).eth.sendTransaction(
+        {
+            "from": chain.get_accounts()[0],
+            "to": str(ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY.address),
+            "value": Web3.toWei(100_000, "ether"),
+        }
+    )
+
+    # deploy mock Dai contract and mint 1 million Dai to master account
+
+    dai = DaiMockContract.deploy(
+        provider=ETHEREUM_PROVIDER,
+        account_private_key=ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY,
+    ).get()
+
+    dai.mint(
+        account_private_key=ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY,
+        atto_dai=1_000_000 * (10 ** 18),
+    ).get()
+
+    # deploy controller
+
+    controller = Controller.deploy(
+        provider=ETHEREUM_PROVIDER,
+        master_account_private_key=ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY,
+        dai_contract_address=dai.address,
+        market_fee_atto_dai_per_nano_dai=10 ** 7,
+    ).get()
+
+    ETHEREUM_CONTROLLER_ADDRESS = controller.contract_address
+
 else:
-    ETHEREUM_PROVIDER = IPCProvider(eth_provider)
 
-ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY = (
-    PrivateKey(bytes.fromhex(eth_master_acc)) if eth_master_acc else None
-)
+    assert eth_master_acc
+    assert eth_controller_address
 
-ETHEREUM_CONTROLLER_ADDRESS = (
-    Address(eth_controller_address) if eth_controller_address else None
-)
+    if eth_provider.startswith("http://") or eth_provider.startswith(
+        "https://"
+    ):
+        ETHEREUM_PROVIDER = HTTPProvider(eth_provider)
+    elif eth_provider.startswith("ws://"):
+        ETHEREUM_PROVIDER = WebsocketProvider(eth_provider)
+    else:
+        ETHEREUM_PROVIDER = IPCProvider(eth_provider)
+
+    ETHEREUM_MASTER_ACCOUNT_PRIVATE_KEY = PrivateKey(
+        bytes.fromhex(eth_master_acc)
+    )
+
+    ETHEREUM_CONTROLLER_ADDRESS = Address(eth_controller_address)
 
 # ---------------------------------------------------------------------------- #
 # CORS

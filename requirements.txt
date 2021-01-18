@@ -7,7 +7,6 @@ coreapi==2.3.3
 coreschema==0.0.4
 dj-database-url==0.5.0
 django-cors-headers==3.5.0
-django-heroku==0.3.1
 Django==3.1.2
 djangorestframework==3.12.1
 drf-yasg==1.20.0
@@ -19,10 +18,10 @@ isort==5.6.4
 itypes==1.2.0
 Jinja2==2.11.2
 lazy-object-proxy==1.4.3
+Markdown==3.3.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
 packaging==20.7
-psycopg2==2.8.6
 Pygments==2.7.3
 pylint==2.6.0
 pyparsing==2.4.7
@@ -30,6 +29,7 @@ PySocks==1.7.1
 python-dateutil==2.8.1
 python-dotenv==0.15.0
 pytz==2020.1
+PyYAML==5.3.1
 requests-toolbelt==0.9.1
 requests==2.25.0
 ruamel.yaml.clib==0.2.2
@@ -39,9 +39,7 @@ six==1.15.0
 sqlparse==0.4.1
 stripe==2.55.1
 toml==0.10.1
-tuichain-ethereum[test] @ https://github.com/TuiChain/blockchain/archive/main.zip
 typed-ast==1.4.1
 uritemplate==3.0.1
 urllib3==1.26.2
-whitenoise==5.2.0
 wrapt==1.12.1
