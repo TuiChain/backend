@@ -22,7 +22,7 @@ def create_investment(request):
     ----------
     loan_id : integer
 
-        Loan request identifier.
+        Loan identifier.
 
     amount : float
 
@@ -34,13 +34,13 @@ def create_investment(request):
         Investment created with success.
 
     400
-        Loan request or amount missing or amount value is not correct.
+        Loan or amount missing or amount value is not correct.
 
     403
-        Loan request is not active, validated or is its own loan request.
+        Loan is not active, validated or is its own loan.
 
     404
-        Loan request doesn't exist.
+        Loan doesn't exist.
 
 
     """
@@ -60,30 +60,30 @@ def create_investment(request):
 
     if loan is None:
         return Response(
-            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+            {"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND
         )
 
     if loan.student == user.id:
         return Response(
-            {"error": "Cannot invest in your own Loan Request"},
+            {"error": "Cannot invest in your own Loan"},
             status=HTTP_403_FORBIDDEN,
         )
 
     if not loan.validated:
         return Response(
-            {"error": "The given Loan Request is not validated yet"},
+            {"error": "The given Loan is not validated yet"},
             status=HTTP_403_FORBIDDEN,
         )
 
     if not loan.active:
         return Response(
-            {"error": "The given Loan Request is not active anymore"},
+            {"error": "The given Loan is not active anymore"},
             status=HTTP_403_FORBIDDEN,
         )
 
     if loan.student == user:
         return Response(
-            {"error": "A user cannot invest in its own Loan Requests"},
+            {"error": "A user cannot invest in its own Loan"},
             status=HTTP_403_FORBIDDEN,
         )
 
