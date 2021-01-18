@@ -331,7 +331,9 @@ def get_loan(request, id):
         )
 
         loan_dict["state"] = fetched_loan.get_state().phase.name
-        loan_dict["funded_value_atto_dai"] = fetched_loan.get_state().funded_value_atto_dai
+        loan_dict[
+            "funded_value_atto_dai"
+        ] = fetched_loan.get_state().funded_value_atto_dai
         loan_dict["token_address"] = str(fetched_loan.token_contract_address)
 
     return Response(
