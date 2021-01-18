@@ -329,14 +329,10 @@ def get_loan(request, id):
         fetched_loan = controller.loans.get_by_identifier(
             LoanIdentifier(loan.identifier)
         )
-        phase = fetched_loan.get_state().phase
-        loan_dict["state"] = phase.name
 
-        funded_value_atto_dai = fetched_loan.get_state().funded_value_atto_dai
-        loan_dict["funded_value_atto_dai"] = funded_value_atto_dai
-
-        token_contact_address = fetched_loan.token_contract_address
-        loan_dict["token_address"] = str(token_contact_address)
+        loan_dict["state"] = fetched_loan.get_state().phase.name
+        loan_dict["funded_value_atto_dai"] = fetched_loan.get_state().funded_value_atto_dai
+        loan_dict["token_address"] = str(fetched_loan.token_contract_address)
 
     return Response(
         {
