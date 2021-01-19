@@ -88,23 +88,6 @@ class Loan(models.Model):
         }
 
 
-class Investment(models.Model):
-    id = models.AutoField(primary_key=True)
-    investor = models.ForeignKey(User, on_delete=models.CASCADE)
-    request = models.ForeignKey(Loan, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=8, decimal_places=2)
-    investment_date = models.DateTimeField(auto_now_add=True)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "investor": self.investor.id,
-            "request": self.request.id,
-            "amount": self.amount,
-            "investment_date": self.investment_date,
-        }
-
-
 # SIGNALS
 
 # Create Auth token automatically when a User is created
