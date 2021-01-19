@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from tuichain.api.models import Loan, Profile
 from itertools import chain
-
+from web3 import Web3
 from tuichain_ethereum import LoanIdentifier, Address
 
 from tuichain.api.services.blockchain import controller
@@ -41,7 +41,7 @@ def get_personal_investments(request, user_addr):
         Personal investments fetched with success.
 
     """
-
+    user_addr = Web3.toChecksumAddress(user_addr)
     adr = Address(user_addr)
 
     loans_arr = []
@@ -117,7 +117,7 @@ def get_investment(request, id, user_addr):
         Investments fetched with success.
 
     """
-
+    user_addr = Web3.toChecksumAddress(user_addr)
     adr = Address(user_addr)
 
     loan = _get_loan(id)
