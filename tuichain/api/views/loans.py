@@ -78,6 +78,11 @@ def create_loan_request(request):
             status=HTTP_400_BAD_REQUEST,
         )
 
+    try:
+        Address(recipient_address)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
+
     # TODO: verify if User has complete profile and validated identity
 
     q = Loan.objects.filter(student=user)
