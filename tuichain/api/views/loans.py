@@ -78,6 +78,11 @@ def create_loan_request(request):
             status=HTTP_400_BAD_REQUEST,
         )
 
+    try:
+        Address(recipient_address)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
+
     # TODO: verify if User has complete profile and validated identity
 
     q = Loan.objects.filter(student=user)
@@ -116,6 +121,27 @@ def create_loan_request(request):
 def withdraw_loan_request(request, id):
     """
     Withdraw a pending Loan Request
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan's identifier.
+
+    Returns
+    -------
+    201
+        Loan withdrawn with sucess.
+
+    400
+        Loan cannot be withdrawn.
+
+    403
+        Loan exists but does not belong to current logged user.
+
+    404
+        Loan doesn't exist.
+
     """
 
     user = request.user
@@ -164,6 +190,9 @@ def validate_loan_request(request, id):
     -------
     201
         Loan request validated successfully.
+
+    400
+        Loan request fields are missing.
 
     403
         Loan request has already been validated.
@@ -241,7 +270,7 @@ def validate_loan_request(request, id):
 @permission_classes((IsAdminUser,))
 def reject_loan_request(request, id):
     """
-    Reject a Loan Request
+    Reject a Loan request
 
     Parameters
     ----------
@@ -255,7 +284,7 @@ def reject_loan_request(request, id):
         Loan request rejected successfully.
 
     403
-        Loan request already rejected.
+        Loan request already rejected, already been validated or withdrawn by the user.
 
     404
         Loan request not found.
@@ -266,19 +295,19 @@ def reject_loan_request(request, id):
 
     if loan is None:
         return Response(
-            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+            {"error": "Unexistent Loan request"}, status=HTTP_404_NOT_FOUND
         )
 
     if loan.state == LoanState.REJECTED.value:
         return Response(
-            {"error": "The given Loan Request as already been rejected"},
+            {"error": "The given Loan request as already been rejected"},
             status=HTTP_403_FORBIDDEN,
         )
 
     if loan.state > LoanState.PENDING.value:
         return Response(
             {
-                "error": "The given Loan Request as already been validated or withdrawn by the user"
+                "error": "The given Loan request as already been validated or withdrawn by the user"
             },
             status=HTTP_403_FORBIDDEN,
         )
@@ -287,7 +316,7 @@ def reject_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan Request has been rejected"}, status=HTTP_201_CREATED
+        {"message": "Loan request has been rejected"}, status=HTTP_201_CREATED
     )
 
 
@@ -295,21 +324,21 @@ def reject_loan_request(request, id):
 @permission_classes((IsAuthenticated,))
 def get_loan(request, id):
     """
-    Get Loan Request with given ID
+    Get Loan with given ID
 
     Parameters
     ----------
     id : integer
 
-        Loan Request's identifier.
+        Loan's identifier.
 
     Returns
     -------
     200
-        Loan request found with success.
+        Loan found with success.
 
     404
-        Loan request not found.
+        Loan not found.
 
     """
 
@@ -319,7 +348,7 @@ def get_loan(request, id):
 
     if loan is None:
         return Response(
-            {"error": "Loan Request with given ID not found"},
+            {"error": "Loan with given ID not found"},
             status=HTTP_404_NOT_FOUND,
         )
 
@@ -338,7 +367,7 @@ def get_loan(request, id):
 
     return Response(
         {
-            "message": "Loan Request found with success",
+            "message": "Loan found with success",
             "loan": loan_dict,
         },
         status=HTTP_200_OK,
@@ -349,7 +378,7 @@ def get_loan(request, id):
 @permission_classes((IsAuthenticated,))
 def get_personal_loans(request):
     """
-    Get Loan Requests made by the authenticated user
+    Get Loan made by the authenticated user
 
     Parameters
     ----------
@@ -357,7 +386,7 @@ def get_personal_loans(request):
     Returns
     -------
     200
-        loan requests fetched with success.
+        Loans made by authenticated user fetched with success.
 
     """
 
@@ -381,7 +410,7 @@ def get_personal_loans(request):
 
     return Response(
         {
-            "message": "Loan Requests fetched with success",
+            "message": "Loan fetched with success",
             "loans": result,
             "count": len(result),
         },
@@ -394,6 +423,15 @@ def get_personal_loans(request):
 def get_all_loans(request):
     """
     Get all loans
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    200
+        All Loans fetched with success.
+
     """
 
     loan_list = Loan.objects.all()
@@ -414,7 +452,7 @@ def get_all_loans(request):
 
     return Response(
         {
-            "message": "Loan Requests fetched with success",
+            "message": "Loan fetched with success",
             "loans": result,
             "count": len(result),
         },
@@ -434,7 +472,7 @@ def get_operating_loans(request):
     Returns
     -------
     200
-        Loans fetched with success.
+        All operating Loans fetched with success.
 
     """
 
@@ -471,6 +509,26 @@ def get_operating_loans(request):
 def get_specific_state_loans(request, state, user_info):
     """
     Get all loans at a given state with respective user_info, if requested.
+
+    Parameters
+    ----------
+    state : integer
+
+        Loan's state.
+
+    user_info : integer
+
+        Flag that tells if information about user should be used or not.
+
+    Returns
+    -------
+    200
+        Loans at given state fetched with success.
+
+    404
+        Loans at given state doesn't exist.
+
+
     """
     if state in LoanState.__members__:
         loan_list = Loan.objects.filter(state=getattr(LoanState, state).value)
@@ -503,7 +561,7 @@ def get_specific_state_loans(request, state, user_info):
 
     return Response(
         {
-            "message": "Loan Requests fetched with success",
+            "message": "Loans fetched with success",
             "loans": result,
             "count": len(result),
         },
