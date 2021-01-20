@@ -1,5 +1,3 @@
-# ---------------------------------------------------------------------------- #
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import *
 from rest_framework.permissions import AllowAny
@@ -9,7 +7,6 @@ from tuichain.api.models import Loan, Profile
 from itertools import chain
 
 from tuichain_ethereum import LoanIdentifier, Address
-
 from tuichain.api.services.blockchain import controller
 
 # ---------------------------------------------------------------------------- #
