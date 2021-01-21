@@ -115,6 +115,57 @@ def create_loan_request(request):
         status=HTTP_201_CREATED,
     )
 
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def cancel_loan(request, id):
+    """
+    Cancel a Loan
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan's identifier.
+
+    Returns
+    -------
+    201
+        Loan canceled successfully.
+
+    403
+        Cannot cancel a loan that you don't own
+
+    403
+        Loan cannot be canceled.
+
+    404
+        Loan not found.
+
+    """
+    user = request.user
+    loan = Loan.objects.filter(id=id).first()
+
+    if user != loan.student and not user.is_superuser:
+        return Response(
+            {"error": "Cannot cancel a loan that you don't own"}, status=HTTP_403_FORBIDDEN
+        )
+
+    if loan is None:
+        return Response(
+            {"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND
+        )
+
+    if loan.state != LoanState.APPROVED.value:
+        return Response(
+            {"error": "The given Loan cannot be canceled"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).cancel()
+
+    return Response(
+        {"message": "Loan has been canceled"}, status=HTTP_201_CREATED
+    )
 
 @api_view(["PUT"])
 @permission_classes((IsAuthenticated,))
@@ -265,6 +316,49 @@ def validate_loan_request(request, id):
         {"message": "Loan Request has been validated"}, status=HTTP_201_CREATED
     )
 
+@api_view(["PUT"])
+@permission_classes((IsAdminUser,))
+def finalize_loan(request, id):
+    """
+    Finalize a Loan
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan's identifier.
+
+    Returns
+    -------
+    201
+        Loan finalized successfully.
+
+    403
+        Loan cannot be finalized.
+
+    404
+        Loan not found.
+
+    """
+
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response(
+            {"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND
+        )
+
+    if loan.state != LoanState.APPROVED.value:
+        return Response(
+            {"error": "The given Loan cannot be finalized"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).finalize()
+
+    return Response(
+        {"message": "Loan has been finalized"}, status=HTTP_201_CREATED
+    )
 
 @api_view(["PUT"])
 @permission_classes((IsAdminUser,))
