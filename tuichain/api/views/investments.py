@@ -1,127 +1,112 @@
-from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-)
-from tuichain.api.models import Investment, Loan
-from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
-import decimal
+from rest_framework.permissions import *
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
+from tuichain.api.models import Loan, Profile
+from itertools import chain
+
+from tuichain_ethereum import LoanIdentifier, Address
+from tuichain.api.services.blockchain import controller
+
+# ---------------------------------------------------------------------------- #
 
 
-@api_view(["POST"])
-@permission_classes((IsAuthenticated,))
-def create_investment(request):
-    """
-    Create new Investment
-
-    Parameters
-    ----------
-    loan_id : integer
-
-        Loan request identifier.
-
-    amount : float
-
-        Amount to invest.
-
-    Returns
-    -------
-    201
-        Investment created with success.
-
-    400
-        Loan request or amount missing or amount value is not correct.
-
-    403
-        Loan request is not active, validated or is its own loan request.
-
-    404
-        Loan request doesn't exist.
+def _get_loan(loan_id):
+    loan = Loan.objects.get(id=int(loan_id))
+    return controller.loans.get_by_identifier(LoanIdentifier(loan.identifier))
 
 
-    """
-
-    user = request.user
-
-    loan_id = request.data.get("request")
-    amount = request.data.get("amount")
-
-    if loan_id is None or amount is None:
-        return Response(
-            {"error": "Required fields: request and amount"},
-            status=HTTP_400_BAD_REQUEST,
-        )
-
-    loan = Loan.objects.filter(id=loan_id).first()
-
-    if loan is None:
-        return Response(
-            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
-        )
-
-    if loan.student == user.id:
-        return Response(
-            {"error": "Cannot invest in your own Loan Request"},
-            status=HTTP_403_FORBIDDEN,
-        )
-
-    if not loan.validated:
-        return Response(
-            {"error": "The given Loan Request is not validated yet"},
-            status=HTTP_403_FORBIDDEN,
-        )
-
-    if not loan.active:
-        return Response(
-            {"error": "The given Loan Request is not active anymore"},
-            status=HTTP_403_FORBIDDEN,
-        )
-
-    if loan.student == user:
-        return Response(
-            {"error": "A user cannot invest in its own Loan Requests"},
-            status=HTTP_403_FORBIDDEN,
-        )
-
-    decimal_amount = decimal.Decimal(amount)
-
-    new_amount = decimal_amount + loan.current_amount
-
-    if new_amount <= loan.amount:
-        investment = Investment.objects.create(
-            amount=decimal_amount, investor=user, request=loan
-        )
-        investment.save()
-
-        loan.current_amount = new_amount
-        loan.save()
-
-        return Response(
-            {"message": "Investment created with success"},
-            status=HTTP_201_CREATED,
-        )
-
-    else:
-        return Response(
-            {
-                "error": "An Investment with that amount is not possible at the moment"
-            },
-            status=HTTP_400_BAD_REQUEST,
-        )
+# ---------------------------------------------------------------------------- #
 
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
-def get_personal_investments(request):
+def get_personal_investments(request, user_addr):
     """
     Get Investments made by the authenticated user
 
     Parameters
     ----------
+    user_addr : string
+
+        User's blockchain string address
+
+    Returns
+    -------
+    200
+        Personal investments fetched with success.
+
+    """
+
+    adr = Address(user_addr)
+
+    loans_arr = []
+    invested_loans = []
+
+    loan_identifiers = frozenset(
+        chain(
+            (
+                loan.identifier
+                for loan in controller.loans.get_by_token_holder(adr)
+            ),
+            (
+                sp.loan.identifier
+                for sp in controller.market.get_sell_positions_by_seller(adr)
+            ),
+        )
+    )
+
+    for loan_id in loan_identifiers:
+
+        l = controller.loans.get_by_identifier(loan_id)
+
+        student_id = (
+            Loan.objects.filter(identifier=str(l.identifier)).first().student
+        )
+
+        student_name = Profile.objects.filter(user=student_id).first().full_name
+        loan_dict = (
+            Loan.objects.filter(identifier=str(l.identifier)).first().to_dict()
+        )
+        loan_dict["state"] = l.get_state().phase.name
+
+        loan_obj = {
+            "loan": loan_dict,
+            "name": student_name,
+            "nrTokens": l.get_token_balance_of(adr),
+            # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
+            #    l, adr
+            # ),
+        }
+
+        loans_arr.append(loan_obj)
+
+    return Response(
+        {
+            "message": "Personal investments fetched with success",
+            "investments": loans_arr,
+            "count": len(loans_arr),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_investment(request, id, user_addr):
+    """
+    Get Investment with the given ID
+
+    Parameters
+    ----------
+    loan_id : integer
+
+        Loan's database identifier.
+
+    user_addr : string
+
+        User blockchain address
 
     Returns
     -------
@@ -130,58 +115,36 @@ def get_personal_investments(request):
 
     """
 
-    user = request.user
+    adr = Address(user_addr)
 
-    investment_list = Investment.objects.filter(investor=user)
+    loan = _get_loan(id)
 
-    result = [obj.to_dict() for obj in investment_list]
+    student_id = (
+        Loan.objects.filter(identifier=str(loan.identifier)).first().student
+    )
+    student_name = Profile.objects.filter(user=student_id).first().full_name
+
+    loan_dict = (
+        Loan.objects.filter(identifier=str(loan.identifier)).first().to_dict()
+    )
+    loan_dict["state"] = loan.get_state().phase.name
+
+    loan_obj = {
+        "loan": loan_dict,
+        "name": student_name,
+        "nrTokens": loan.get_token_balance_of(adr),
+        # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
+        #    loan, adr
+        # ),
+    }
 
     return Response(
         {
-            "message": "Investments fetched with success",
-            "investments": result,
-            "count": len(result),
+            "message": "Investment fetched with success",
+            "investment": loan_obj,
         },
         status=HTTP_200_OK,
     )
 
 
-@api_view(["GET"])
-@permission_classes((IsAuthenticated,))
-def get_investment(request, id):
-    """
-    Get Investment with the given ID
-
-    Parameters
-    ----------
-    id : integer
-
-        Investment's identifier.
-
-    Returns
-    -------
-    200
-        Investment found with success.
-
-    404
-        Investment not found.
-
-    """
-
-    investment = Investment.objects.filter(id=id).first()
-
-    # TODO: should we pass it only if it belongs to the authenticated user?
-
-    if investment is None:
-        return Response(
-            {"error": "Investment with given ID not found"},
-            status=HTTP_404_NOT_FOUND,
-        )
-
-    return Response(
-        {
-            "message": "Investment found with success",
-            "investment": investment.to_dict(),
-        },
-        status=HTTP_200_OK,
-    )
+# ---------------------------------------------------------------------------- #

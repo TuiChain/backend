@@ -61,9 +61,14 @@ urlpatterns = [
         external.get_id_verification_result,
     ),
     # INVESTMENTS ROUTES
-    path("api/investments/new/", investments.create_investment),
-    path("api/investments/get_personal/", investments.get_personal_investments),
-    path("api/investments/get/<int:id>/", investments.get_investment),
+    path(
+        "api/investments/get_personal/<str:user_addr>/",
+        investments.get_personal_investments,
+    ),
+    path(
+        "api/investments/get/<int:id>/<str:user_addr>/",
+        investments.get_investment,
+    ),
     # LOAN REQUESTS ROUTES
     path("api/loans/new/", loans.create_loan_request),
     path(
