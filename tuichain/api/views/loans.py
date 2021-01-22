@@ -111,7 +111,7 @@ def create_loan_request(request):
     loan.save()
 
     return Response(
-        {"message": "Loan Request successfully created"},
+        {"message": "Loan Request successfully created", "loan": loan.id},
         status=HTTP_201_CREATED,
     )
 
@@ -360,9 +360,15 @@ def get_loan(request, id):
         )
 
         loan_state = fetched_loan.get_state()
+        loan_funding_fee = fetched_loan.funding_fee_atto_dai_per_dai
+        loan_payment_fee = fetched_loan.payment_fee_atto_dai_per_dai
 
         loan_dict["state"] = loan_state.phase.name
-        loan_dict["funded_value_atto_dai"] = loan_state.funded_value_atto_dai
+        loan_dict["funded_value_atto_dai"] = str(
+            loan_state.funded_value_atto_dai
+        )
+        loan_dict["funding_fee_atto_dai_per_dai"] = str(loan_funding_fee)
+        loan_dict["payment_fee_atto_dai_per_dai"] = str(loan_payment_fee)
         loan_dict["token_address"] = str(fetched_loan.token_contract_address)
 
     return Response(
