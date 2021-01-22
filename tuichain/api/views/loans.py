@@ -637,9 +637,15 @@ def get_specific_state_loans(request, state, user_info):
         result = []
 
         for identifier in identifiers_list:
+            funded_value = (
+                controller.loans.get_by_identifier(identifier)
+                .get_state()
+                .funded_value_atto_dai
+            )
             loan = Loan.objects.filter(identifier=identifier).first()
             loan_dict = loan.to_dict()
             loan_dict["state"] = state
+            loan_dict["funded_value_atto_dai"] = str(funded_value)
             result.append(loan_dict)
 
     else:
@@ -649,8 +655,8 @@ def get_specific_state_loans(request, state, user_info):
 
     if user_info:
         for obj in result:
-            user = Profile.objects.filter(user=obj["student"]).first()
-            obj["user_full_name"] = user.full_name
+            profile = Profile.objects.filter(user=obj["student"]).first()
+            obj["user_full_name"] = profile.user.get_full_name()
 
     return Response(
         {
