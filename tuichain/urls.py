@@ -75,6 +75,7 @@ urlpatterns = [
         "api/loans/validate/<int:id>/",
         loans.validate_loan_request,
     ),
+    path("api/loans/finalize/<int:id>/", loans.finalize_loan),
     path("api/loans/reject/<int:id>/", loans.reject_loan_request),
     path(
         "api/loans/get_personal/",
@@ -87,6 +88,7 @@ urlpatterns = [
         loans.get_specific_state_loans,
     ),
     path("api/loans/get/<int:id>/", loans.get_loan),
+    path("api/loans/cancel/<int:id>/", loans.cancel_loan),
     path(
         "api/loans/user_withdraw/<int:id>/",
         loans.withdraw_loan_request,

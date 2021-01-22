@@ -50,8 +50,11 @@ jobs:
           profile: minimal
           default: true
 
+      - name: Downgrade pip  # to work around broken dependencies
+        run: pip3 install pip==20.2.3
+
       - name: Install dependencies
-        run: pip3 install -r requirements-dev.txt
+        run: pip3 install --use-feature=2020-resolver -r requirements-dev.txt
 
       - name: Create .env file
         run: cp .env_test .env
@@ -89,8 +92,11 @@ jobs:
           profile: minimal
           default: true
 
+      - name: Downgrade pip  # to work around broken dependencies
+        run: pip3 install pip==20.2.3
+
       - name: Install dependencies
-        run: pip3 install -r requirements-dev.txt
+        run: pip3 install --use-feature=2020-resolver -r requirements-dev.txt
 
       - name: Create .env file
         run: cp .env_test .env
