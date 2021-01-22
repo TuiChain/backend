@@ -8,15 +8,12 @@ from rest_framework.status import (
 )
 from tuichain.api.models import Loan, Profile
 from tuichain.api.enums import LoanState
-from tuichain.api.services.blockchain import controller
+from tuichain.api.services.blockchain import controller, retrieve_current_price
 from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 import decimal
-import statistics
 from datetime import timedelta
-from itertools import repeat
-from statistics import median, StatisticsError
 
 
 @api_view(["POST"])
@@ -361,33 +358,12 @@ def get_loan(request, id):
         fetched_loan = controller.loans.get_by_identifier(
             LoanIdentifier(loan.identifier)
         )
-
         loan_state = fetched_loan.get_state()
-
-        if loan_state.phase in [
-            LoanPhase.FUNDING,
-            LoanPhase.CANCELED,
-            LoanPhase.EXPIRED,
-        ]:
-            value_atto_dai = 10 ** 18
-
-        elif loan_state.phase == LoanPhase.ACTIVE:
-            try:
-                value_atto_dai = median(
-                    repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
-                    for sp in controller.market.get_sell_positions_by_loan(
-                        fetched_loan
-                    )
-                )
-            except statistics.StatisticsError:
-                value_atto_dai = None
-
-        else:  # loan_state.phase == LoanPhase.FINALIZED
-            value_atto_dai = loan_state.redemption_value_atto_dai_per_token
+        value_atto_dai = retrieve_current_price(fetched_loan)
 
         loan_dict["state"] = loan_state.phase.name
         loan_dict["funded_value_atto_dai"] = loan_state.funded_value_atto_dai
-        loan_dict["current_price_atto_dai"] = value_atto_dai
+        loan_dict["current_price_atto_dai"] = str(value_atto_dai)
         loan_dict["token_address"] = str(fetched_loan.token_contract_address)
 
     return Response(
@@ -427,32 +403,10 @@ def get_personal_loans(request):
                 LoanIdentifier(obj.identifier)
             )
             phase = fetched_loan.get_state().phase
-
-            if phase in [
-                LoanPhase.FUNDING,
-                LoanPhase.CANCELED,
-                LoanPhase.EXPIRED,
-            ]:
-                value_atto_dai = 10 ** 18
-
-            elif phase == LoanPhase.ACTIVE:
-                try:
-                    value_atto_dai = median(
-                        repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
-                        for sp in controller.market.get_sell_positions_by_loan(
-                            fetched_loan
-                        )
-                    )
-                except statistics.StatisticsError:
-                    value_atto_dai = None
-
-            else:  # loan_state.phase == LoanPhase.FINALIZED
-                value_atto_dai = (
-                    fetched_loan.get_state().redemption_value_atto_dai_per_token
-                )
+            value_atto_dai = retrieve_current_price(fetched_loan)
 
             loan_dict["state"] = phase.name
-            loan_dict["current_price_atto_dai"] = value_atto_dai
+            loan_dict["current_price_atto_dai"] = str(value_atto_dai)
         result.append(loan_dict)
 
     return Response(
@@ -491,32 +445,10 @@ def get_all_loans(request):
                 LoanIdentifier(obj.identifier)
             )
             phase = fetched_loan.get_state().phase
-
-            if phase in [
-                LoanPhase.FUNDING,
-                LoanPhase.CANCELED,
-                LoanPhase.EXPIRED,
-            ]:
-                value_atto_dai = 10 ** 18
-
-            elif phase == LoanPhase.ACTIVE:
-                try:
-                    value_atto_dai = median(
-                        repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
-                        for sp in controller.market.get_sell_positions_by_loan(
-                            fetched_loan
-                        )
-                    )
-                except statistics.StatisticsError:
-                    value_atto_dai = None
-
-            else:  # loan_state.phase == LoanPhase.FINALIZED
-                value_atto_dai = (
-                    fetched_loan.get_state().redemption_value_atto_dai_per_token
-                )
+            value_atto_dai = retrieve_current_price(fetched_loan)
 
             loan_dict["state"] = phase.name
-            loan_dict["current_price_atto_dai"] = value_atto_dai
+            loan_dict["current_price_atto_dai"] = str(value_atto_dai)
         result.append(loan_dict)
 
     return Response(
@@ -559,30 +491,11 @@ def get_operating_loans(request):
                 LoanIdentifier(obj.identifier)
             )
             phase = fetched_loan.get_state().phase
+            value_atto_dai = retrieve_current_price(fetched_loan)
+
             if phase not in [LoanPhase.CANCELED, LoanPhase.EXPIRED]:
-                if phase == LoanPhase.FUNDING:
-                    value_atto_dai = 10 ** 18
-
-                elif phase == LoanPhase.ACTIVE:
-                    try:
-                        value_atto_dai = median(
-                            repeat(
-                                sp.price_atto_dai_per_token, sp.amount_tokens
-                            )
-                            for sp in controller.market.get_sell_positions_by_loan(
-                                fetched_loan
-                            )
-                        )
-                    except statistics.StatisticsError:
-                        value_atto_dai = None
-
-                else:  # loan_state.phase == LoanPhase.FINALIZED
-                    value_atto_dai = (
-                        fetched_loan.get_state().redemption_value_atto_dai_per_token
-                    )
-
                 loan_dict["state"] = phase.name
-                loan_dict["current_price_atto_dai"] = value_atto_dai
+                loan_dict["current_price_atto_dai"] = str(value_atto_dai)
                 result.append(loan_dict)
 
     return Response(
@@ -638,33 +551,10 @@ def get_specific_state_loans(request, state, user_info):
             loan = Loan.objects.filter(identifier=identifier).first()
             loan_dict = loan.to_dict()
             fetched_loan = controller.loans.get_by_identifier(identifier)
-            phase = fetched_loan.get_state().phase
-
-            if phase in [
-                LoanPhase.FUNDING,
-                LoanPhase.CANCELED,
-                LoanPhase.EXPIRED,
-            ]:
-                value_atto_dai = 10 ** 18
-
-            elif phase == LoanPhase.ACTIVE:
-                try:
-                    value_atto_dai = median(
-                        repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
-                        for sp in controller.market.get_sell_positions_by_loan(
-                            fetched_loan
-                        )
-                    )
-                except statistics.StatisticsError:
-                    value_atto_dai = None
-
-            else:  # loan_state.phase == LoanPhase.FINALIZED
-                value_atto_dai = (
-                    fetched_loan.get_state().redemption_value_atto_dai_per_token
-                )
+            value_atto_dai = retrieve_current_price(fetched_loan)
 
             loan_dict["state"] = state
-            loan_dict["current_price_atto_dai"] = value_atto_dai
+            loan_dict["current_price_atto_dai"] = str(value_atto_dai)
             result.append(loan_dict)
 
     else:
