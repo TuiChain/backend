@@ -12,8 +12,9 @@ from tuichain.api.services.blockchain import controller
 from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
-import decimal
 from datetime import timedelta
+from itertools import repeat
+from statistics import median, StatisticsError
 
 
 def _retrieve_current_price(loan):

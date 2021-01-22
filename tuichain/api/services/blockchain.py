@@ -1,7 +1,5 @@
 from django.conf import settings
-from itertools import repeat
-from statistics import median, StatisticsError
-from tuichain_ethereum import Controller, LoanPhase
+from tuichain_ethereum import Controller
 
 controller = Controller(
     provider=settings.ETHEREUM_PROVIDER,
