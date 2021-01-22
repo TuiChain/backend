@@ -360,8 +360,8 @@ def get_loan(request, id):
         )
 
         loan_state = fetched_loan.get_state()
-        loan_funding_fee = fetched_loan.funding_fee_atto_dai_per_dai()
-        loan_payment_fee = fetched_loan.payment_fee_atto_dai_per_dai()
+        loan_funding_fee = fetched_loan.funding_fee_atto_dai_per_dai
+        loan_payment_fee = fetched_loan.payment_fee_atto_dai_per_dai
 
         loan_dict["state"] = loan_state.phase.name
         loan_dict["funded_value_atto_dai"] = loan_state.funded_value_atto_dai
