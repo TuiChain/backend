@@ -552,7 +552,7 @@ def get_specific_state_loans(request, state, user_info):
             loan = Loan.objects.filter(identifier=identifier).first()
             loan_dict = loan.to_dict()
             loan_dict["state"] = state
-            loan_dict["funded_value_atto_dai"] = funded_value
+            loan_dict["funded_value_atto_dai"] = str(funded_value)
             result.append(loan_dict)
 
     else:
