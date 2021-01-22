@@ -509,7 +509,7 @@ def get_personal_loans(request):
             loan_dict["state"] = state.phase.name
             loan_dict["current_price_atto_dai"] = value_atto_dai
             loan_dict["funded_value_atto_dai"] = state.funded_value_atto_dai
-            loan_dict["token_address"] = str(loan.token_contract_address)
+            loan_dict["token_address"] = str(fetched_loan.token_contract_address)
         result.append(loan_dict)
 
     return Response(
@@ -598,7 +598,7 @@ def get_operating_loans(request):
 
             if phase not in [LoanPhase.CANCELED, LoanPhase.EXPIRED]:
                 loan_dict["state"] = phase.name
-                loan_dict["current_price_atto_dai"] = str(value_atto_dai)
+                loan_dict["current_price_atto_dai"] = value_atto_dai
                 result.append(loan_dict)
 
     return Response(
