@@ -130,7 +130,7 @@ def cancel_loan(request, id):
 
     Returns
     -------
-    201
+    200
         Loan canceled successfully.
 
     403
@@ -146,14 +146,14 @@ def cancel_loan(request, id):
     user = request.user
     loan = Loan.objects.filter(id=id).first()
 
+    if loan is None:
+        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
+
     if user != loan.student and not user.is_superuser:
         return Response(
             {"error": "Cannot cancel a loan that you don't own"},
             status=HTTP_403_FORBIDDEN,
         )
-
-    if loan is None:
-        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
 
     if loan.state != LoanState.APPROVED.value:
         return Response(
@@ -163,9 +163,7 @@ def cancel_loan(request, id):
 
     controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).cancel()
 
-    return Response(
-        {"message": "Loan has been canceled"}, status=HTTP_201_CREATED
-    )
+    return Response({"message": "Loan has been canceled"}, status=HTTP_200_OK)
 
 
 @api_view(["PUT"])
@@ -182,7 +180,7 @@ def withdraw_loan_request(request, id):
 
     Returns
     -------
-    201
+    200
         Loan withdrawn with sucess.
 
     400
@@ -222,7 +220,7 @@ def withdraw_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan Request has been withdrawn"}, status=HTTP_201_CREATED
+        {"message": "Loan Request has been withdrawn"}, status=HTTP_200_OK
     )
 
 
@@ -240,7 +238,7 @@ def validate_loan_request(request, id):
 
     Returns
     -------
-    201
+    200
         Loan request validated successfully.
 
     400
@@ -314,7 +312,7 @@ def validate_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan Request has been validated"}, status=HTTP_201_CREATED
+        {"message": "Loan Request has been validated"}, status=HTTP_200_OK
     )
 
 
@@ -332,7 +330,7 @@ def finalize_loan(request, id):
 
     Returns
     -------
-    201
+    200
         Loan finalized successfully.
 
     403
@@ -358,9 +356,7 @@ def finalize_loan(request, id):
         LoanIdentifier(loan.identifier)
     ).finalize()
 
-    return Response(
-        {"message": "Loan has been finalized"}, status=HTTP_201_CREATED
-    )
+    return Response({"message": "Loan has been finalized"}, status=HTTP_200_OK)
 
 
 @api_view(["PUT"])
@@ -377,7 +373,7 @@ def reject_loan_request(request, id):
 
     Returns
     -------
-    201
+    200
         Loan request rejected successfully.
 
     403
@@ -413,7 +409,7 @@ def reject_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan request has been rejected"}, status=HTTP_201_CREATED
+        {"message": "Loan request has been rejected"}, status=HTTP_200_OK
     )
 
 
