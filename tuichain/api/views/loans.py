@@ -12,8 +12,41 @@ from tuichain.api.services.blockchain import controller
 from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
-import decimal
 from datetime import timedelta
+from itertools import repeat
+from statistics import median, StatisticsError
+
+
+def _retrieve_current_price(loan):
+
+    state = loan.get_state()
+
+    if state.phase in [
+        LoanPhase.FUNDING,
+        LoanPhase.CANCELED,
+        LoanPhase.EXPIRED,
+    ]:
+
+        return str(10 ** 18)
+
+    elif state.phase == LoanPhase.ACTIVE:
+
+        try:
+
+            atto_dai_per_token = median(
+                repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
+                for sp in controller.market.get_sell_positions_by_loan(loan)
+            )
+
+            return str(atto_dai_per_token)
+
+        except StatisticsError:
+
+            return None
+
+    else:  # state.phase == LoanPhase.FINALIZED
+
+        return state.redemption_value_atto_dai_per_token
 
 
 @api_view(["POST"])
@@ -451,7 +484,6 @@ def get_loan(request, id):
         fetched_loan = controller.loans.get_by_identifier(
             LoanIdentifier(loan.identifier)
         )
-
         loan_state = fetched_loan.get_state()
         loan_funding_fee = fetched_loan.funding_fee_atto_dai_per_dai
         loan_payment_fee = fetched_loan.payment_fee_atto_dai_per_dai
@@ -462,6 +494,9 @@ def get_loan(request, id):
         )
         loan_dict["funding_fee_atto_dai_per_dai"] = str(loan_funding_fee)
         loan_dict["payment_fee_atto_dai_per_dai"] = str(loan_payment_fee)
+        loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+            fetched_loan
+        )
         loan_dict["token_address"] = str(fetched_loan.token_contract_address)
 
     return Response(
@@ -499,17 +534,19 @@ def get_personal_loans(request):
         loan_dict = obj.to_dict()
 
         if obj.state == LoanState.APPROVED.value:
-
-            loan = controller.loans.get_by_identifier(
+            fetched_loan = controller.loans.get_by_identifier(
                 LoanIdentifier(obj.identifier)
             )
-
-            state = loan.get_state()
+            state = fetched_loan.get_state()
 
             loan_dict["state"] = state.phase.name
+            loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                fetched_loan
+            )
             loan_dict["funded_value_atto_dai"] = state.funded_value_atto_dai
-            loan_dict["token_address"] = str(loan.token_contract_address)
-
+            loan_dict["token_address"] = str(
+                fetched_loan.token_contract_address
+            )
         result.append(loan_dict)
 
     return Response(
@@ -544,14 +581,15 @@ def get_all_loans(request):
     for obj in loan_list:
         loan_dict = obj.to_dict()
         if obj.state == LoanState.APPROVED.value:
-            phase = (
-                controller.loans.get_by_identifier(
-                    LoanIdentifier(obj.identifier)
-                )
-                .get_state()
-                .phase
+            fetched_loan = controller.loans.get_by_identifier(
+                LoanIdentifier(obj.identifier)
             )
+            phase = fetched_loan.get_state().phase
+
             loan_dict["state"] = phase.name
+            loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                fetched_loan
+            )
         result.append(loan_dict)
 
     return Response(
@@ -590,12 +628,16 @@ def get_operating_loans(request):
         if obj.state != LoanState.APPROVED.value:
             result.append(loan_dict)
         else:
-            loan = controller.loans.get_by_identifier(
+            fetched_loan = controller.loans.get_by_identifier(
                 LoanIdentifier(obj.identifier)
             )
-            phase = loan.get_state().phase
+            phase = fetched_loan.get_state().phase
+
             if phase not in [LoanPhase.CANCELED, LoanPhase.EXPIRED]:
                 loan_dict["state"] = phase.name
+                loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                    fetched_loan
+                )
                 result.append(loan_dict)
 
     return Response(
@@ -655,8 +697,13 @@ def get_specific_state_loans(request, state, user_info):
             )
             loan = Loan.objects.filter(identifier=identifier).first()
             loan_dict = loan.to_dict()
+            fetched_loan = controller.loans.get_by_identifier(identifier)
+
             loan_dict["state"] = state
             loan_dict["funded_value_atto_dai"] = str(funded_value)
+            loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                fetched_loan
+            )
             result.append(loan_dict)
 
     else:
