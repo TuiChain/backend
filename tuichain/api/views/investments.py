@@ -85,7 +85,7 @@ def get_personal_investments(request, user_addr):
     return Response(
         {
             "message": "Personal investments fetched with success",
-            "loans": loans_arr,
+            "investments": loans_arr,
             "count": len(loans_arr),
         },
         status=HTTP_200_OK,
@@ -141,7 +141,7 @@ def get_investment(request, id, user_addr):
     return Response(
         {
             "message": "Investment fetched with success",
-            "loan": loan_obj,
+            "investment": loan_obj,
         },
         status=HTTP_200_OK,
     )
