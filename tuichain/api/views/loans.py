@@ -396,16 +396,21 @@ def get_personal_loans(request):
     result = []
 
     for obj in loan_list:
+
         loan_dict = obj.to_dict()
+
         if obj.state == LoanState.APPROVED.value:
-            phase = (
-                controller.loans.get_by_identifier(
-                    LoanIdentifier(obj.identifier)
-                )
-                .get_state()
-                .phase
+
+            loan = controller.loans.get_by_identifier(
+                LoanIdentifier(obj.identifier)
             )
-            loan_dict["state"] = phase.name
+
+            state = loan.get_state()
+
+            loan_dict["state"] = state.phase.name
+            loan_dict["funded_value_atto_dai"] = state.funded_value_atto_dai
+            loan_dict["token_address"] = str(loan.token_contract_address)
+
         result.append(loan_dict)
 
     return Response(
