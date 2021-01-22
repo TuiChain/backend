@@ -115,6 +115,7 @@ def create_loan_request(request):
         status=HTTP_201_CREATED,
     )
 
+
 @api_view(["PUT"])
 @permission_classes((IsAuthenticated,))
 def cancel_loan(request, id):
@@ -147,13 +148,12 @@ def cancel_loan(request, id):
 
     if user != loan.student and not user.is_superuser:
         return Response(
-            {"error": "Cannot cancel a loan that you don't own"}, status=HTTP_403_FORBIDDEN
+            {"error": "Cannot cancel a loan that you don't own"},
+            status=HTTP_403_FORBIDDEN,
         )
 
     if loan is None:
-        return Response(
-            {"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
 
     if loan.state != LoanState.APPROVED.value:
         return Response(
@@ -166,6 +166,7 @@ def cancel_loan(request, id):
     return Response(
         {"message": "Loan has been canceled"}, status=HTTP_201_CREATED
     )
+
 
 @api_view(["PUT"])
 @permission_classes((IsAuthenticated,))
@@ -316,6 +317,7 @@ def validate_loan_request(request, id):
         {"message": "Loan Request has been validated"}, status=HTTP_201_CREATED
     )
 
+
 @api_view(["PUT"])
 @permission_classes((IsAdminUser,))
 def finalize_loan(request, id):
@@ -344,9 +346,7 @@ def finalize_loan(request, id):
     loan = Loan.objects.filter(id=id).first()
 
     if loan is None:
-        return Response(
-            {"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
 
     if loan.state != LoanState.APPROVED.value:
         return Response(
@@ -354,11 +354,14 @@ def finalize_loan(request, id):
             status=HTTP_403_FORBIDDEN,
         )
 
-    controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).finalize()
+    controller.loans.get_by_identifier(
+        LoanIdentifier(loan.identifier)
+    ).finalize()
 
     return Response(
         {"message": "Loan has been finalized"}, status=HTTP_201_CREATED
     )
+
 
 @api_view(["PUT"])
 @permission_classes((IsAdminUser,))
