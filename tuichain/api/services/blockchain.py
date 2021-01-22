@@ -9,6 +9,7 @@ controller = Controller(
     contract_address=settings.ETHEREUM_CONTROLLER_ADDRESS,
 )
 
+
 def retrieve_current_price(fetched_loan):
     loan_state = fetched_loan.get_state()
 
@@ -32,5 +33,5 @@ def retrieve_current_price(fetched_loan):
 
     else:  # loan_state.phase == LoanPhase.FINALIZED
         value_atto_dai = loan_state.redemption_value_atto_dai_per_token
-    
+
     return value_atto_dai
