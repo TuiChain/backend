@@ -124,8 +124,8 @@ EMAIL_BACKEND = environ["EMAIL_BACKEND"]
 # ---------------------------------------------------------------------------- #
 # Storage
 
-DEFAULT_FILE_STORAGE = 'storages.backends.dropbox.DropBoxStorage'
-DROPBOX_OAUTH2_TOKEN = environ["DBX_ACCESS_TOKEN"]
+GCP_CREDENTIALS = BASE_DIR + "/" + environ["GCP_CREDS_FILE"]
+GCP_BUCKET_NAME = environ["GCP_BUCKET_NAME"]
 
 # ---------------------------------------------------------------------------- #
 # Ethereum

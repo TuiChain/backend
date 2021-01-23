@@ -1,13 +1,16 @@
 from django.conf import settings
-import dropbox
+from google.cloud import storage
 
 
-dbx = dropbox.Dropbox(settings.DBX_ACCESS_TOKEN)
+def upload_file(file, name):
 
-dbx.users_get_current_account()
+    storage_client = storage.Client.from_service_account_json(
+        settings.GCP_CREDENTIALS
+    )
 
+    bucket = storage_client.get_bucket(settings.GCP_BUCKET_NAME)
+    blob = bucket.blob(name)
+    blob.upload_from_file(file)
 
-def upload_file(dbx, file, dest):
-    print("TOU AQUI")
-    metadata = dbx.files_upload(file, dest)
-    print("DONE:", metadata)
+    # returns a public url
+    return blob.public_url
