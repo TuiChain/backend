@@ -98,7 +98,7 @@ class Document(models.Model):
             "rejected": self.rejected,
             "name": self.name,
             "url": self.url,
-            "loan": self.loan.id,
+            "loan": self.loan.to_dict(),
         }
 
 
