@@ -86,7 +86,7 @@ def get_personal_investments(request, user_addr):
             "name": student_name,
             "nrTokens": l.get_token_balance_of(adr),
             "nrTokens_market": nrTokens_market,
-            "price_per_token_market": price_per_token_market
+            "price_per_token_market": price_per_token_market,
         }
 
         loans_arr.append(loan_obj)
