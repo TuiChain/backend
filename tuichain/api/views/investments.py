@@ -71,9 +71,7 @@ def get_personal_investments(request, user_addr):
             Loan.objects.filter(identifier=str(l.identifier)).first().to_dict()
         )
         loan_dict["state"] = l.get_state().phase.name
-        loan_dict["current_value_atto_dai"] = _retrieve_current_price(
-            l
-        )
+        loan_dict["current_value_atto_dai"] = _retrieve_current_price(l)
 
         sell_position = controller.market.get_sell_position_by_loan_and_seller(
             l, adr
