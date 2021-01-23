@@ -71,13 +71,22 @@ def get_personal_investments(request, user_addr):
         )
         loan_dict["state"] = l.get_state().phase.name
 
+        sell_position = controller.market.get_sell_position_by_loan_and_seller(
+            l, adr
+        )
+
+        price_per_token_market = 0
+        nrTokens_market = 0
+        if sell_position != None:
+            nrTokens_market = sell_position.amount_tokens
+            price_per_token_market = sell_position.price_atto_dai_per_token
+
         loan_obj = {
             "loan": loan_dict,
             "name": student_name,
             "nrTokens": l.get_token_balance_of(adr),
-            # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
-            #    l, adr
-            # ),
+            "nrTokens_market": nrTokens_market,
+            "price_per_token_market": price_per_token_market
         }
 
         loans_arr.append(loan_obj)
