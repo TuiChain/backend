@@ -122,6 +122,12 @@ EMAIL_HOST_PASSWORD = environ["EMAIL_HOST_PASSWORD"]
 EMAIL_BACKEND = environ["EMAIL_BACKEND"]
 
 # ---------------------------------------------------------------------------- #
+# Storage
+
+DEFAULT_FILE_STORAGE = 'storages.backends.dropbox.DropBoxStorage'
+DROPBOX_OAUTH2_TOKEN = environ["DBX_ACCESS_TOKEN"]
+
+# ---------------------------------------------------------------------------- #
 # Ethereum
 
 eth_provider = environ["ETHEREUM_PROVIDER"]
