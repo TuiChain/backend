@@ -93,7 +93,7 @@ urlpatterns = [
         "api/loans/user_withdraw/<int:id>/",
         loans.withdraw_loan_request,
     ),
-    # USER TRANSACTIONS
+    # USER TRANSACTIONS ROUTES
     path(
         "api/loans/transactions/provide_funds/",
         loan_transactions.provide_funds,
@@ -109,6 +109,36 @@ urlpatterns = [
         "api/loans/transactions/redeem_tokens/",
         loan_transactions.redeem_tokens,
     ),
+    # LOAN DOCUMENTS ROUTES
+    path(
+        "api/loans/documents/get_unevaluated_docs/<int:id>/",
+        loans.get_loan_unevaluated_docs,
+    ),
+    path(
+        "api/loans/documents/get_approved_public_docs/<int:id>/",
+        loans.get_loan_approved_public_docs,
+    ),
+    path(
+        "api/loans/documents/get_personal_docs/<int:id>/",
+        loans.get_loan_personal_docs,
+    ),
+    path(
+        "api/loans/documents/get_all_unevaluated/",
+        loans.get_all_unevaluated_documents,
+    ),
+    path(
+        "api/loans/documents/approve_document/<int:id>/",
+        loans.approve_document,
+    ),
+    path(
+        "api/loans/documents/reject_document/<int:id>/",
+        loans.reject_document,
+    ),
+    path(
+        "api/loans/documents/upload_document/<int:id>/",
+        loans.upload_document,
+    ),
+    # MARKET ROUTES
     path(
         "api/market/transactions/create_sell_position/",
         market_transactions.create_sell_position,

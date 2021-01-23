@@ -18,17 +18,10 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
     short_bio = models.CharField(max_length=500, null=True, blank=True)
-    profile_image = models.FileField(
-        upload_to="media/photos", null=True, blank=True
-    )
+    profile_pic = models.CharField(max_length=1000, null=True, blank=True)
     id_number = models.IntegerField(null=True, blank=True)
 
     def to_dict(self, private=False):
-        img_url = ""
-
-        # if self.profile_image is not None:
-        #     img_url = self.profile_image.url
-
         result = {
             "id": self.user.id,
             "username": self.user.username,
@@ -36,7 +29,7 @@ class Profile(models.Model):
             "is_active": self.user.is_active,
             "country": self.country,
             "short_bio": self.short_bio,
-            "profile_image": img_url,
+            "profile_pic": self.profile_pic,
         }
 
         if private:
@@ -85,6 +78,27 @@ class Loan(models.Model):
             "state": str(LoanState(self.state)),
             "recipient_address": self.recipient_address,
             "identifier": self.identifier,
+        }
+
+
+class Document(models.Model):
+    id = models.AutoField(primary_key=True)
+    is_public = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
+    name = models.CharField(max_length=100)
+    url = models.CharField(max_length=1000)
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "is_public": self.is_public,
+            "approved": self.approved,
+            "rejected": self.rejected,
+            "name": self.name,
+            "url": self.url,
+            "loan": self.loan.to_dict(),
         }
 
 

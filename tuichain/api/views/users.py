@@ -11,6 +11,8 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.core import serializers
+from tuichain.api.services.storage import upload_file
+from datetime import datetime
 
 # Add here routes related to the Users
 @api_view(["GET"])
@@ -142,6 +144,9 @@ def update_profile(request):
 
         User's city.
 
+    profile_pic: file
+        Profile Image
+
     id_number : integer
 
         User's idnetifier.
@@ -166,7 +171,7 @@ def update_profile(request):
     city = request.data.get("city")
     id_number = request.data.get("id_number")
     short_bio = request.data.get("short_bio")
-    profile_image = request.data.get("profile_image")
+    profile_pic = request.data.get("profile_pic")
 
     profile = user.profile
 
@@ -187,8 +192,15 @@ def update_profile(request):
             profile.id_number = id_number
         if short_bio is not None:
             profile.short_bio = short_bio
-        if profile_image is not None:
-            profile.profile_image = profile_image
+        if profile_pic is not None:
+            url = upload_file(
+                profile_pic,
+                "profile_pic_"
+                + user.id
+                + "_"
+                + str(round(datetime.now().timestamp())),
+            )
+            profile.profile_pic = url
 
         profile.save()
 

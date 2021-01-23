@@ -6,13 +6,14 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
 )
-from tuichain.api.models import Loan, Profile
+from tuichain.api.models import Loan, Profile, Document
 from tuichain.api.enums import LoanState
 from tuichain.api.services.blockchain import controller
+from tuichain.api.services.storage import upload_file
 from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
-from datetime import timedelta
+from datetime import timedelta, datetime
 from itertools import repeat
 from statistics import median, StatisticsError
 
@@ -723,4 +724,334 @@ def get_specific_state_loans(request, state, user_info):
             "count": len(result),
         },
         status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAdminUser,))
+def get_loan_unevaluated_docs(request, id):
+    """
+    Get all unevaluated docs for a given Loan. ADMIN ONLY.
+
+    Parameters
+    ----------
+    id: integer
+        Loan request ID
+
+    Returns
+    -------
+    200
+        Documents fetched with success
+
+    404
+        Unexistent Loan Request
+
+    """
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response(
+            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+        )
+
+    documents = Document.objects.filter(
+        loan=loan, approved=False, rejected=False
+    )
+
+    result = [doc.to_dict() for doc in documents]
+
+    return Response(
+        {
+            "message": "Documents fetched with success",
+            "loan": id,
+            "documents": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_loan_approved_public_docs(request, id):
+    """
+    Get all approved public docs for a given Loan.
+
+    Parameters
+    ----------
+    id: integer
+        Loan request ID
+
+    Returns
+    -------
+    200
+        Documents fetched with success
+
+    404
+        Unexistent Loan Request
+
+    """
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response(
+            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+        )
+
+    documents = Document.objects.filter(
+        loan=loan, is_public=True, approved=True
+    )
+
+    result = [doc.to_dict() for doc in documents]
+
+    return Response(
+        {
+            "message": "Documents fetched with success",
+            "loan": id,
+            "documents": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_loan_personal_docs(request, id):
+    """
+    Get all personal docs (private and public) for a given Loan.
+
+    Parameters
+    ----------
+    id: integer
+        Loan request ID
+
+    Returns
+    -------
+    200
+        Documents fetched with success
+
+    403
+        Loan Request does not belong to logged user
+
+    404
+        Unexistent Loan Request
+
+    """
+    user = request.user
+
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response(
+            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+        )
+
+    if loan.student != user:
+        return Response(
+            {"error": "Loan Request does not belong to logged user"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    documents = Document.objects.filter(loan=id)
+
+    result = [doc.to_dict() for doc in documents]
+
+    return Response(
+        {
+            "message": "Documents fetched with success",
+            "loan": id,
+            "documents": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAdminUser,))
+def get_all_unevaluated_documents(request):
+    """
+    Get all unevaluated docs for all the Loans. ADMIN ONLY.
+
+    Returns
+    -------
+    200
+        Documents fetched with success
+
+    """
+    documents = Document.objects.filter(approved=False, rejected=False)
+
+    result = [doc.to_dict() for doc in documents]
+
+    return Response(
+        {
+            "message": "Documents fetched with success",
+            "documents": result,
+            "count": len(result),
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["PUT"])
+@permission_classes((IsAdminUser,))
+def approve_document(request, id):
+    """
+    Approve document with given ID. ADMIN ONLY.
+
+    Parameters
+    ----------
+    id: integer
+        Document ID
+
+    Returns
+    -------
+    201
+        Document approved with success
+
+    404
+        Document Not Found
+
+    """
+    document = Document.objects.filter(id=id).first()
+
+    if document is None:
+        return Response(
+            {"error": "Document Not Found"},
+            status=HTTP_404_NOT_FOUND,
+        )
+
+    document.approved = True
+    document.rejected = False
+
+    document.save()
+
+    return Response(
+        {
+            "message": "Document approved with success",
+            "document": document.to_dict(),
+        },
+        status=HTTP_201_CREATED,
+    )
+
+
+@api_view(["PUT"])
+@permission_classes((IsAdminUser,))
+def reject_document(request, id):
+    """
+    Reject document with given ID. ADMIN ONLY.
+
+    Parameters
+    ----------
+    id: integer
+        Document ID
+
+    Returns
+    -------
+    201
+        Document rejected with success
+
+    404
+        Document Not Found
+
+    """
+    document = Document.objects.filter(id=id).first()
+
+    if document is None:
+        return Response(
+            {"error": "Document Not Found"},
+            status=HTTP_404_NOT_FOUND,
+        )
+
+    document.approved = False
+    document.rejected = True
+
+    document.save()
+
+    return Response(
+        {
+            "message": "Document rejected with success",
+            "document": document.to_dict(),
+        },
+        status=HTTP_201_CREATED,
+    )
+
+
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def upload_document(request, id):
+    """
+    Upload document for the Loan with the given ID.
+
+    Parameters
+    ----------
+    id: integer
+        Loan ID
+
+    Returns
+    -------
+    201
+        Document uploaded with success
+
+    400
+        Required fields: document, name and is_public
+
+    403
+        Loan Request does not belong to logged user
+
+    404
+        Unexistent Loan Request
+
+    """
+    user = request.user
+
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response(
+            {"error": "Unexistent Loan Request"}, status=HTTP_404_NOT_FOUND
+        )
+
+    if loan.student != user:
+        return Response(
+            {"error": "Loan Request does not belong to logged user"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    document = request.data.get("document")
+    name = request.data.get("name")
+    is_public = request.data.get("is_public")
+
+    if document is None or name is None or is_public is None:
+        return Response(
+            {"error": "Required fields: document, name and is_public"},
+            status=HTTP_400_BAD_REQUEST,
+        )
+
+    url = upload_file(
+        document,
+        "loan_"
+        + str(id)
+        + "_"
+        + name
+        + "_"
+        + str(round(datetime.now().timestamp())),
+    )
+
+    doc = Document.objects.create(
+        loan=loan,
+        name=name,
+        is_public=is_public,
+        approved=False,
+        url=url,
+    )
+    doc.save()
+
+    return Response(
+        {
+            "message": "Document uploaded with success",
+            "document": doc.to_dict(),
+        },
+        status=HTTP_201_CREATED,
     )

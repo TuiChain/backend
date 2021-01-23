@@ -122,6 +122,12 @@ EMAIL_HOST_PASSWORD = environ["EMAIL_HOST_PASSWORD"]
 EMAIL_BACKEND = environ["EMAIL_BACKEND"]
 
 # ---------------------------------------------------------------------------- #
+# Storage
+
+GCP_CREDENTIALS = BASE_DIR + "/" + environ["GCP_CREDS_FILE"]
+GCP_BUCKET_NAME = environ["GCP_BUCKET_NAME"]
+
+# ---------------------------------------------------------------------------- #
 # Ethereum
 
 eth_provider = environ["ETHEREUM_PROVIDER"]
