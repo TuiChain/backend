@@ -13,9 +13,41 @@ from tuichain.api.services.storage import upload_file
 from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
-import decimal
 from datetime import timedelta, datetime
+from itertools import repeat
+from statistics import median, StatisticsError
 
+
+def _retrieve_current_price(loan):
+
+    state = loan.get_state()
+
+    if state.phase in [
+        LoanPhase.FUNDING,
+        LoanPhase.CANCELED,
+        LoanPhase.EXPIRED,
+    ]:
+
+        return str(10 ** 18)
+
+    elif state.phase == LoanPhase.ACTIVE:
+
+        try:
+
+            atto_dai_per_token = median(
+                repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
+                for sp in controller.market.get_sell_positions_by_loan(loan)
+            )
+
+            return str(atto_dai_per_token)
+
+        except StatisticsError:
+
+            return None
+
+    else:  # state.phase == LoanPhase.FINALIZED
+
+        return state.redemption_value_atto_dai_per_token
 
 @api_view(["POST"])
 @permission_classes((IsAuthenticated,))
@@ -112,9 +144,59 @@ def create_loan_request(request):
     loan.save()
 
     return Response(
-        {"message": "Loan Request successfully created"},
+        {"message": "Loan Request successfully created", "loan": loan.id},
         status=HTTP_201_CREATED,
     )
+
+
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def cancel_loan(request, id):
+    """
+    Cancel a Loan
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan's identifier.
+
+    Returns
+    -------
+    200
+        Loan canceled successfully.
+
+    403
+        Cannot cancel a loan that you don't own
+
+    403
+        Loan cannot be canceled.
+
+    404
+        Loan not found.
+
+    """
+    user = request.user
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
+
+    if user != loan.student and not user.is_superuser:
+        return Response(
+            {"error": "Cannot cancel a loan that you don't own"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    if loan.state != LoanState.APPROVED.value:
+        return Response(
+            {"error": "The given Loan cannot be canceled"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    controller.loans.get_by_identifier(LoanIdentifier(loan.identifier)).cancel()
+
+    return Response({"message": "Loan has been canceled"}, status=HTTP_200_OK)
 
 
 @api_view(["PUT"])
@@ -131,7 +213,7 @@ def withdraw_loan_request(request, id):
 
     Returns
     -------
-    201
+    200
         Loan withdrawn with sucess.
 
     400
@@ -171,7 +253,7 @@ def withdraw_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan Request has been withdrawn"}, status=HTTP_201_CREATED
+        {"message": "Loan Request has been withdrawn"}, status=HTTP_200_OK
     )
 
 
@@ -189,7 +271,7 @@ def validate_loan_request(request, id):
 
     Returns
     -------
-    201
+    200
         Loan request validated successfully.
 
     400
@@ -263,8 +345,51 @@ def validate_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan Request has been validated"}, status=HTTP_201_CREATED
+        {"message": "Loan Request has been validated"}, status=HTTP_200_OK
     )
+
+
+@api_view(["PUT"])
+@permission_classes((IsAdminUser,))
+def finalize_loan(request, id):
+    """
+    Finalize a Loan
+
+    Parameters
+    ----------
+    id : integer
+
+        Loan's identifier.
+
+    Returns
+    -------
+    200
+        Loan finalized successfully.
+
+    403
+        Loan cannot be finalized.
+
+    404
+        Loan not found.
+
+    """
+
+    loan = Loan.objects.filter(id=id).first()
+
+    if loan is None:
+        return Response({"error": "Unexistent Loan"}, status=HTTP_404_NOT_FOUND)
+
+    if loan.state != LoanState.APPROVED.value:
+        return Response(
+            {"error": "The given Loan cannot be finalized"},
+            status=HTTP_403_FORBIDDEN,
+        )
+
+    controller.loans.get_by_identifier(
+        LoanIdentifier(loan.identifier)
+    ).finalize()
+
+    return Response({"message": "Loan has been finalized"}, status=HTTP_200_OK)
 
 
 @api_view(["PUT"])
@@ -281,7 +406,7 @@ def reject_loan_request(request, id):
 
     Returns
     -------
-    201
+    200
         Loan request rejected successfully.
 
     403
@@ -317,7 +442,7 @@ def reject_loan_request(request, id):
     loan.save()
 
     return Response(
-        {"message": "Loan request has been rejected"}, status=HTTP_201_CREATED
+        {"message": "Loan request has been rejected"}, status=HTTP_200_OK
     )
 
 
@@ -359,11 +484,19 @@ def get_loan(request, id):
         fetched_loan = controller.loans.get_by_identifier(
             LoanIdentifier(loan.identifier)
         )
-
         loan_state = fetched_loan.get_state()
+        loan_funding_fee = fetched_loan.funding_fee_atto_dai_per_dai
+        loan_payment_fee = fetched_loan.payment_fee_atto_dai_per_dai
 
         loan_dict["state"] = loan_state.phase.name
-        loan_dict["funded_value_atto_dai"] = loan_state.funded_value_atto_dai
+        loan_dict["funded_value_atto_dai"] = str(
+            loan_state.funded_value_atto_dai
+        )
+        loan_dict["funding_fee_atto_dai_per_dai"] = str(loan_funding_fee)
+        loan_dict["payment_fee_atto_dai_per_dai"] = str(loan_payment_fee)
+        loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+            fetched_loan
+        )
         loan_dict["token_address"] = str(fetched_loan.token_contract_address)
 
     return Response(
@@ -397,16 +530,23 @@ def get_personal_loans(request):
     result = []
 
     for obj in loan_list:
+
         loan_dict = obj.to_dict()
+
         if obj.state == LoanState.APPROVED.value:
-            phase = (
-                controller.loans.get_by_identifier(
-                    LoanIdentifier(obj.identifier)
-                )
-                .get_state()
-                .phase
+            fetched_loan = controller.loans.get_by_identifier(
+                LoanIdentifier(obj.identifier)
             )
-            loan_dict["state"] = phase.name
+            state = fetched_loan.get_state()
+
+            loan_dict["state"] = state.phase.name
+            loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                fetched_loan
+            )
+            loan_dict["funded_value_atto_dai"] = state.funded_value_atto_dai
+            loan_dict["token_address"] = str(
+                fetched_loan.token_contract_address
+            )
         result.append(loan_dict)
 
     return Response(
@@ -441,14 +581,15 @@ def get_all_loans(request):
     for obj in loan_list:
         loan_dict = obj.to_dict()
         if obj.state == LoanState.APPROVED.value:
-            phase = (
-                controller.loans.get_by_identifier(
-                    LoanIdentifier(obj.identifier)
-                )
-                .get_state()
-                .phase
+            fetched_loan = controller.loans.get_by_identifier(
+                LoanIdentifier(obj.identifier)
             )
+            phase = fetched_loan.get_state().phase
+
             loan_dict["state"] = phase.name
+            loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                fetched_loan
+            )
         result.append(loan_dict)
 
     return Response(
@@ -487,12 +628,16 @@ def get_operating_loans(request):
         if obj.state != LoanState.APPROVED.value:
             result.append(loan_dict)
         else:
-            loan = controller.loans.get_by_identifier(
+            fetched_loan = controller.loans.get_by_identifier(
                 LoanIdentifier(obj.identifier)
             )
-            phase = loan.get_state().phase
+            phase = fetched_loan.get_state().phase
+
             if phase not in [LoanPhase.CANCELED, LoanPhase.EXPIRED]:
                 loan_dict["state"] = phase.name
+                loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                    fetched_loan
+                )
                 result.append(loan_dict)
 
     return Response(
@@ -545,9 +690,20 @@ def get_specific_state_loans(request, state, user_info):
         result = []
 
         for identifier in identifiers_list:
+            funded_value = (
+                controller.loans.get_by_identifier(identifier)
+                .get_state()
+                .funded_value_atto_dai
+            )
             loan = Loan.objects.filter(identifier=identifier).first()
             loan_dict = loan.to_dict()
+            fetched_loan = controller.loans.get_by_identifier(identifier)
+
             loan_dict["state"] = state
+            loan_dict["funded_value_atto_dai"] = str(funded_value)
+            loan_dict["current_value_atto_dai"] = _retrieve_current_price(
+                fetched_loan
+            )
             result.append(loan_dict)
 
     else:
@@ -557,8 +713,8 @@ def get_specific_state_loans(request, state, user_info):
 
     if user_info:
         for obj in result:
-            user = Profile.objects.filter(user=obj["student"]).first()
-            obj["user_full_name"] = user.full_name
+            profile = Profile.objects.filter(user=obj["student"]).first()
+            obj["user_full_name"] = profile.user.get_full_name()
 
     return Response(
         {

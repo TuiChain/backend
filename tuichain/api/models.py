@@ -25,7 +25,6 @@ class Profile(models.Model):
         result = {
             "id": self.user.id,
             "username": self.user.username,
-            "full_name": self.full_name,
             "created_at": self.user.date_joined,
             "is_active": self.user.is_active,
             "country": self.country,
@@ -34,6 +33,7 @@ class Profile(models.Model):
         }
 
         if private:
+            result["full_name"] = self.full_name
             result["birth_date"] = self.birth_date
             result["address"] = self.address
             result["zip_code"] = self.zip_code
