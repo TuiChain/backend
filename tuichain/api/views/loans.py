@@ -894,7 +894,7 @@ def get_all_unevaluated_documents(request):
     )
 
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @permission_classes((IsAdminUser,))
 def approve_document(request, id):
     """
@@ -936,7 +936,7 @@ def approve_document(request, id):
     )
 
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @permission_classes((IsAdminUser,))
 def reject_document(request, id):
     """
