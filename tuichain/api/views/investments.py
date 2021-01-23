@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from tuichain.api.models import Loan, Profile
+from tuichain.api.views.loans import _retrieve_current_price
 from itertools import chain
 
 from tuichain_ethereum import LoanIdentifier, Address
@@ -70,14 +71,24 @@ def get_personal_investments(request, user_addr):
             Loan.objects.filter(identifier=str(l.identifier)).first().to_dict()
         )
         loan_dict["state"] = l.get_state().phase.name
+        loan_dict["current_value_atto_dai"] = _retrieve_current_price(l)
+
+        sell_position = controller.market.get_sell_position_by_loan_and_seller(
+            l, adr
+        )
+
+        price_per_token_market = 0
+        nrTokens_market = 0
+        if sell_position is not None:
+            nrTokens_market = sell_position.amount_tokens
+            price_per_token_market = sell_position.price_atto_dai_per_token
 
         loan_obj = {
             "loan": loan_dict,
             "name": student_name,
             "nrTokens": l.get_token_balance_of(adr),
-            # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
-            #    l, adr
-            # ),
+            "nrTokens_market": nrTokens_market,
+            "price_per_token_market": price_per_token_market,
         }
 
         loans_arr.append(loan_obj)
