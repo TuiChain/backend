@@ -49,6 +49,7 @@ def _retrieve_current_price(loan):
 
         return state.redemption_value_atto_dai_per_token
 
+
 @api_view(["POST"])
 @permission_classes((IsAuthenticated,))
 def create_loan_request(request):
