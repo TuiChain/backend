@@ -196,7 +196,7 @@ def update_profile(request):
             url = upload_file(
                 profile_pic,
                 "profile_pic_"
-                + user.id
+                + str(user.id)
                 + "_"
                 + str(round(datetime.now().timestamp())),
             )
