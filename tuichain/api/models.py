@@ -51,6 +51,16 @@ class IDVerifications(models.Model):
     person_id = models.CharField(max_length=100, null=True, blank=True)
     validated = models.BooleanField(default=False)
 
+    def to_dict(self, private=False):
+        result = {}
+
+        if private:
+            result["verification_id"] = self.verification_id
+            result["person_id"] = self.person_id
+            result["validated"] = self.validated
+
+        return result
+
 
 class Loan(models.Model):
     id = models.AutoField(primary_key=True)

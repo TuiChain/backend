@@ -77,6 +77,7 @@ def get_me(request):
         {
             "message": "User gotten with success",
             "user": user.profile.to_dict(private=True),
+            "id_verification": user.id_verification.to_dict(private=True),
         },
         status=HTTP_200_OK,
     )
