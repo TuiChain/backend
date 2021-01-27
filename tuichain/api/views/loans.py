@@ -716,6 +716,7 @@ def get_specific_state_loans(request, state, user_info):
         for obj in result:
             profile = Profile.objects.filter(user=obj["student"]).first()
             obj["user_full_name"] = profile.user.get_full_name()
+            obj["user_profile_pic"] = profile.profile_pic
 
     return Response(
         {
