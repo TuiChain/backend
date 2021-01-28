@@ -197,7 +197,7 @@ def get_general_investments(request, id):
     )
     loan_dict["state"] = loan.get_state().phase.name
 
-    sell_positions = controller.market.get_sell_position_by_loan(loan)
+    sell_positions = controller.market.get_sell_positions_by_loan(loan)
 
     #sp_list = []
     #for sp in sell_positions:
