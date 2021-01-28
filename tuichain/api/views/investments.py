@@ -141,8 +141,8 @@ def get_investment(request, id, user_addr):
     loan_dict["state"] = loan.get_state().phase.name
 
     sell_position = controller.market.get_sell_position_by_loan_and_seller(
-            loan, adr
-        )
+        loan, adr
+    )
 
     price_per_token_market = 0
     nrTokens_market = 0
@@ -165,6 +165,7 @@ def get_investment(request, id, user_addr):
         },
         status=HTTP_200_OK,
     )
+
 
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
@@ -200,16 +201,20 @@ def get_general_investments(request, id):
     sell_positions = controller.market.get_sell_positions_by_loan(loan)
 
     sp_list = []
-    #for sp in sell_positions:
+    # for sp in sell_positions:
     #    if sp is not None:
     #        sp_list.add(sp)
     for sp in sell_positions:
-        sp_list.append(sp)
+        sp_dict = {}
+        sp_dict["seller_address"] = str(sp.seller_address)
+        sp_dict["amount_tokens"] = sp.amount_tokens
+        sp_dict["price_atto_dai_per_token"] = sp.price_atto_dai_per_token
+        sp_list.append(sp_dict)
 
     loan_obj = {
         "loan": loan_dict,
         "name": student_name,
-        #"nrTokens": loan.get_token_balance_of(adr),
+        # "nrTokens": loan.get_token_balance_of(adr),
         "sell_positions": sp_list,
     }
 
@@ -220,5 +225,6 @@ def get_general_investments(request, id):
         },
         status=HTTP_200_OK,
     )
+
 
 # ---------------------------------------------------------------------------- #
