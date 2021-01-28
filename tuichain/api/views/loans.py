@@ -14,8 +14,6 @@ from tuichain_ethereum import Address, LoanIdentifier, LoanPhase
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from datetime import timedelta, datetime
-from itertools import repeat
-from statistics import median, StatisticsError
 
 
 def _retrieve_current_price(loan):
@@ -32,22 +30,27 @@ def _retrieve_current_price(loan):
 
     elif state.phase == LoanPhase.ACTIVE:
 
-        try:
+        sorted_sell_positions = sorted(
+            controller.market.get_sell_positions_by_loan(loan),
+            key=lambda sp: sp.price_atto_dai_per_token,
+        )
 
-            atto_dai_per_token = median(
-                repeat(sp.price_atto_dai_per_token, sp.amount_tokens)
-                for sp in controller.market.get_sell_positions_by_loan(loan)
-            )
-
-            return str(atto_dai_per_token)
-
-        except StatisticsError:
-
+        if not sorted_sell_positions:
             return None
+
+        counter = 0
+        total_amount_for_sale = sum(
+            sp.amount_tokens for sp in sorted_sell_positions
+        )
+
+        for sp in sorted_sell_positions:
+            counter += sp.amount_tokens
+            if counter > total_amount_for_sale // 2:
+                return str(sp.price_atto_dai_per_token)
 
     else:  # state.phase == LoanPhase.FINALIZED
 
-        return state.redemption_value_atto_dai_per_token
+        return str(state.redemption_value_atto_dai_per_token)
 
 
 @api_view(["POST"])
