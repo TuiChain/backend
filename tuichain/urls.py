@@ -69,6 +69,10 @@ urlpatterns = [
         "api/investments/get/<int:id>/<str:user_addr>/",
         investments.get_investment,
     ),
+    path(
+        "api/investments/get/<int:id>/",
+        investments.get_general_investments,
+    ),
     # LOAN REQUESTS ROUTES
     path("api/loans/new/", loans.create_loan_request),
     path(
