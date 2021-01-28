@@ -207,7 +207,7 @@ def get_general_investments(request, id):
     loan_obj = {
         "loan": loan_dict,
         "name": student_name,
-        "nrTokens": loan.get_token_balance_of(adr),
+        #"nrTokens": loan.get_token_balance_of(adr),
         "sell_positions": sell_positions,
     }
 
