@@ -204,7 +204,7 @@ def get_general_investments(request, id):
     #    if sp is not None:
     #        sp_list.add(sp)
     for sp in sell_positions:
-        sp_list.add(sp)
+        sp_list.append(sp)
 
     loan_obj = {
         "loan": loan_dict,
