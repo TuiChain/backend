@@ -107,7 +107,7 @@ def get_personal_investments(request, user_addr):
 @permission_classes((IsAuthenticated,))
 def get_investment(request, id, user_addr):
     """
-    Get Investment with the given ID
+    Get Investment with the given ID and account address
 
     Parameters
     ----------
@@ -171,7 +171,7 @@ def get_investment(request, id, user_addr):
 @permission_classes((IsAuthenticated,))
 def get_general_investments(request, id):
     """
-    Get Investment with the given ID
+    Get sell positions from the investments done
 
     Parameters
     ----------
