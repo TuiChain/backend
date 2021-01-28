@@ -199,16 +199,18 @@ def get_general_investments(request, id):
 
     sell_positions = controller.market.get_sell_positions_by_loan(loan)
 
-    #sp_list = []
+    sp_list = []
     #for sp in sell_positions:
     #    if sp is not None:
     #        sp_list.add(sp)
+    for sp in sell_positions:
+        sp_list.add(sp)
 
     loan_obj = {
         "loan": loan_dict,
         "name": student_name,
         #"nrTokens": loan.get_token_balance_of(adr),
-        "sell_positions": sell_positions,
+        "sell_positions": sp_list,
     }
 
     return Response(
