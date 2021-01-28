@@ -56,6 +56,7 @@ def request_id_verification(request):
 
     id_verification.verification_id = verification_intent.id
     id_verification.person_id = verification_intent.person
+    id_verification.validated = False
     id_verification.save()
 
     return Response(
