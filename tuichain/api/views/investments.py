@@ -107,7 +107,7 @@ def get_personal_investments(request, user_addr):
 @permission_classes((IsAuthenticated,))
 def get_investment(request, id, user_addr):
     """
-    Get Investment with the given ID
+    Get Investment with the given ID and account address
 
     Parameters
     ----------
@@ -140,13 +140,82 @@ def get_investment(request, id, user_addr):
     )
     loan_dict["state"] = loan.get_state().phase.name
 
+    sell_position = controller.market.get_sell_position_by_loan_and_seller(
+        loan, adr
+    )
+
+    price_per_token_market = 0
+    nrTokens_market = 0
+    if sell_position is not None:
+        nrTokens_market = sell_position.amount_tokens
+        price_per_token_market = sell_position.price_atto_dai_per_token
+
     loan_obj = {
         "loan": loan_dict,
         "name": student_name,
         "nrTokens": loan.get_token_balance_of(adr),
-        # "nrToken_market": controller.market.get_sell_position_by_loan_and_seller(
-        #    loan, adr
-        # ),
+        "nrTokens_market": nrTokens_market,
+        "price_per_token_market": price_per_token_market,
+    }
+
+    return Response(
+        {
+            "message": "Investment fetched with success",
+            "investment": loan_obj,
+        },
+        status=HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_general_investments(request, id):
+    """
+    Get sell positions from the investments done
+
+    Parameters
+    ----------
+    loan_id : integer
+
+        Loan's database identifier.
+
+    Returns
+    -------
+    200
+        Investments fetched with success.
+
+    """
+
+    loan = _get_loan(id)
+
+    student_id = (
+        Loan.objects.filter(identifier=str(loan.identifier)).first().student
+    )
+    student_name = Profile.objects.filter(user=student_id).first().full_name
+
+    loan_dict = (
+        Loan.objects.filter(identifier=str(loan.identifier)).first().to_dict()
+    )
+    loan_dict["state"] = loan.get_state().phase.name
+
+    sell_positions = controller.market.get_sell_positions_by_loan(loan)
+
+    sp_list = []
+    # for sp in sell_positions:
+    #    if sp is not None:
+    #        sp_list.add(sp)
+    for sp in sell_positions:
+        sp_dict = {}
+        sp_dict["seller_address"] = str(sp.seller_address)
+        sp_dict["amount_tokens"] = sp.amount_tokens
+        sp_dict["price_atto_dai_per_token"] = sp.price_atto_dai_per_token
+        sp_list.append(sp_dict)
+
+    loan_obj = {
+        "loan": loan_dict,
+        "name": student_name,
+        # "nrTokens": loan.get_token_balance_of(adr),
+        "sell_positions": sp_list,
     }
 
     return Response(
