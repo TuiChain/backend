@@ -46,10 +46,13 @@ def get_user(request, id):
             {"error": "User with given ID not found"}, status=HTTP_404_NOT_FOUND
         )
 
+    profile_dict = result.profile.to_dict(private=user.id == result.id)
+    profile_dict["user_full_name"] = result.get_full_name()
+
     return Response(
         {
             "message": "User found with success",
-            "user": result.profile.to_dict(private=user.id == result.id),
+            "user": profile_dict,
         },
         status=HTTP_200_OK,
     )
