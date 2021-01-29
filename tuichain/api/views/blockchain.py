@@ -34,6 +34,9 @@ def get_blockchain_info(request):
         {
             "chain_id": controller.chain_id,
             "dai_contract_address": str(controller.dai_contract_address),
+            "market_fee_atto_dai_per_nano_dai": str(
+                controller.market.get_fee_atto_dai_per_nano_dai()
+            ),
         },
         status=HTTP_200_OK,
     )
