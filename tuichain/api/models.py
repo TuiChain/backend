@@ -117,7 +117,6 @@ class Document(models.Model):
 # Create Auth token automatically when a User is created
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
-    print("SIGNAL: create auth token")
     if created:
         Token.objects.create(user=instance)
 
@@ -125,7 +124,6 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 # Create and Save User Profile and ID Verification when a User is created
 @receiver(post_save, sender=User)
 def create_user_profile_idverification(sender, instance, created, **kwargs):
-    # print('SIGNAL: create user profile')
     if created:
         Profile.objects.create(user=instance)
         IDVerifications.objects.create(user=instance)
@@ -133,6 +131,5 @@ def create_user_profile_idverification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile_idverification(sender, instance, **kwargs):
-    # print('SIGNAL: save user profile')
     instance.profile.save()
     instance.id_verification.save()
