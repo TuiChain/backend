@@ -66,7 +66,10 @@ def get_personal_investments(request, user_addr):
             Loan.objects.filter(identifier=str(l.identifier)).first().student
         )
 
-        student_name = Profile.objects.filter(user=student_id).first().full_name
+        student_name = (
+            Profile.objects.filter(user=student_id).first().user.get_full_name()
+        )
+
         loan_dict = (
             Loan.objects.filter(identifier=str(l.identifier)).first().to_dict()
         )
